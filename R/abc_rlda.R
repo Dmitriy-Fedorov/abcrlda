@@ -28,10 +28,7 @@ train <- function(){
 #' @export
 #'
 #' @examples
-abcrlda <- function(x0, x1, gamma, cost_10){  # cost_01 = 1 -  cost_10
-  kappa <- 1 # by default for now
-
-  # p = dim(X0)[1]
+abcrlda <- function(x0, x1, gamma, cost_10, kappa = 1){  # cost_01 = 1 -  cost_10
   p = ncol(x0)  # number of dimensions
   n0 = nrow(x0) # number of samples in x0
   n1 = nrow(x1) # number of samples in x1
@@ -47,22 +44,21 @@ abcrlda <- function(x0, x1, gamma, cost_10){  # cost_01 = 1 -  cost_10
   m2 = rowMeans(X1)
   mdif = m1 - m2
   msum = m2 + m1
-  at = H %*% mdif   # why coefs are here?
-
+  at = kappa * H %*% mdif   # according to paper we should multiply by kappa?
   mt = t(at) %*% msum  # should be scalar
-  # Mat = t(at)%*%sig.true%*%at
   m = -0.5*mt - log((1-cost_10)/cost_10)/kappa
   # ------- omega optimal calculation -------------
-  trH = sum(diag(H))
-  s = 1-p/(n0+n1-2)+trH/(n0+n1-2)
-  deltah = (p/(n0+n1-2)-trH/(n0+n1-2))/(gamma*s)
-  G1 = 0.5*t(m1-m2)%*%H%*%mdif - ((n0+n1-2)/n0) * deltah - log((1-cost_10)/cost_10)/kappa
-  G2 = 0.5*t(m2-m1)%*%H%*%mdif + ((n0+n1-2)/n1) * deltah - log((1-cost_10)/cost_10)/kappa
-  D = t(at)%*%S%*%at
-  D = D*(1+gamma*deltah)^2
-  omegaopt = gamma*(D*log((1-cost_10)/cost_10)/(G2-G1)-0.5*(G1+G2))
-  m = as.numeric(m + omegaopt/gamma) #add the bias term
-  return(structure(list(m=m,a=at,cost=cost_10), class="abcrlda"))
+  traceH = sum(diag(H))  # sum of diagonal elements in H
+  deltahat = (p/(n0+n1-2)-traceH/(n0+n1-2)) / (gamma*(1 - p/(n0+n1-2) + traceH/(n0+n1-2)))
+  G0 = 0.5*t(m1-m2) %*% H %*% mdif - log((1-cost_10)/cost_10)/kappa  # in paper here is gamma
+  G1 = 0.5*t(m2-m1) %*% H %*% mdif - log((1-cost_10)/cost_10)/kappa  # in paper here is gamma
+  Ghat0 = G0 - ((n0+n1-2)/n0) * deltahat
+  Ghat1 = G1 + ((n0+n1-2)/n1) * deltahat
+  D = t(at) %*% S %*% at
+  Dhat = D*(1+gamma*deltahat)^2
+  omegaopt = gamma * (Dhat*log((1-cost_10)/cost_10)/(Ghat1-Ghat0) - 0.5*(Ghat0+Ghat1))
+  m = as.numeric(m + omegaopt/gamma) # add the bias term
+  return(structure(list(a=at, m=m, cost=cost_10), class="abcrlda"))
 
 }
 
@@ -86,8 +82,6 @@ predict_abcrlda <- function(object, x){
   if(!is.data.frame(x))
     x = as.matrix(x)
 
-
-  l <- x %*% object$a + object$m
-  return(as.numeric(l > object$cost))
+  return(as.numeric(x %*% object$a + object$m <= object$cost))
 
 }
