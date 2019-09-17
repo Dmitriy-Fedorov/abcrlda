@@ -1,22 +1,24 @@
-# ----------------- Parameter estimation -----------------------
+
 #' Title
 #'
-#' @param x0
-#' @param x1
+#' @param x
+#' @param grouping
 #' @param range_gamma
 #' @param range_C_10
 #' @param method
+#' @param k_fold
 #'
 #' @return
 #' @export
 #'
 #' @examples
 grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator",
-                        k_fold=3){
+                        k_fold=10){
 
   list_gamma = numeric()
   list_C_10 = numeric()
   list_estimates = numeric()
+
   if(method == "estimator"){
     for(gamma in range_gamma){
       for(C_10 in range_C_10){
@@ -42,11 +44,22 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator"
                         )))
 }
 
+#' Title
+#'
+#' @param x
+#' @param grouping
+#' @param gamma
+#' @param C_10
+#' @param kfolds
+#'
+#' @return
+#' @export
+#'
+#' @examples
 cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
   shufled_index = sample(nrow(x))
   x <- x[shufled_index,]
   grouping <- grouping[shufled_index,]
-
   folds <- cut(seq(1,nrow(x)),breaks=kfolds,labels=FALSE)
   e_cross <- numeric()
 
@@ -70,10 +83,11 @@ cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
 
 #' Title
 #'
-#' @param x0
-#' @param x1
+#' @param x
+#' @param grouping
 #' @param gamma
 #' @param cost_10
+#' @param kappa
 #'
 #' @return
 #' @export
@@ -123,6 +137,7 @@ abcrlda <- function(x, grouping, gamma, cost_10 = 0.5, kappa = 1){  # cost_01 = 
                         omegaopt = omegaopt), class="abcrlda"))
 
 }
+
 
 #' Title
 #'
