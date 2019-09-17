@@ -33,7 +33,7 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator"
       for(C_10 in range_C_10){
         list_gamma = c(list_gamma, gamma)
         list_C_10 = c(list_C_10, C_10)
-        list_estimates = c(list_estimates, cross_validation(x, grouping, gamma, C_10))
+        list_estimates = c(list_estimates, cross_validation(x, grouping, gamma, C_10, k_fold))
       }
     }
   }
@@ -57,23 +57,37 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator"
 #'
 #' @examples
 cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
-  shufled_index = sample(nrow(x))
+  shufled_index <- sample(nrow(x))
   x <- x[shufled_index,]
-  grouping <- grouping[shufled_index,]
+  grouping <- grouping[shufled_index]
   folds <- cut(seq(1,nrow(x)),breaks=kfolds,labels=FALSE)
   e_cross <- numeric()
 
+  # print(paste("____________", gamma, C_10))
   for(i in 1:kfolds){
+    # print(paste(i, "fold"))
     #Segement your data by fold using the which() function
     testIndexes <- which(folds==i, arr.ind=TRUE)
     testData <- x[testIndexes, ]
-    testLabel <- grouping[testIndexes, ]
+    testLabel <- grouping[testIndexes]
     trainData <- x[-testIndexes, ]
-    trainLabel <- grouping[-testIndexes, ]
-    #Use the test and train data partitions however you desire...
+    trainLabel <- grouping[-testIndexes]
+
     abcrlda_model <- abcrlda(trainData, trainLabel, gamma, C_10)
-    predictions <- predict_abcrlda(abcrlda_model, testData)
-    error <- sum(predictions != testLabel) / length(testLabel)
+    test0 <- testData[testLabel == 0,]
+    test1 <- testData[testLabel == 1,]
+    res0 = predict_abcrlda(abcrlda_model, test0)
+    res1 = predict_abcrlda(abcrlda_model, test1)
+    nerr0 = sum(res0)
+    nerr1 = sum(!res1)
+    err0 = nerr0/length(res0)
+    err1 = nerr1/length(res1)
+
+    error <- err0*C_10 + err1*(1 - C_10)
+
+    # predictions <- predict_abcrlda(abcrlda_model, testData)
+    # error <- sum(predictions != testLabel) / length(testLabel)
+    # print(error)
     e_cross <- c(e_cross, error)
   }
   return(mean(e_cross))
