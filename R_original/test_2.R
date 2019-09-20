@@ -5,8 +5,8 @@ library("abcrlda")
 # p0 = c(0, 0, 0.5)  # mean x, mean y, standart deviation
 # p1 = c(1, 1, 0.5)
 
-generate_train_test <- function(N=1000, N_test=10000,
-                                p0=c(0, 0, 0.5), p1=c(1, 1, 0.5)){
+generate_train_test <- function(N=100, N_test=10000,
+                                p0=c(0, 0, 0.5), p1=c(0, 1, 0.5)){
 
   train0 <- matrix(c(rnorm(N, mean = p0[1], sd = p0[3]),
                      rnorm(N, mean = p0[2], sd = p0[3])), ncol=2)
@@ -31,8 +31,8 @@ generate_train_test <- function(N=1000, N_test=10000,
 err <- function(model, test, grouping){
   test0 <- test[grouping == 0,]
   test1 <- test[grouping == 1,]
-  res0 = predict_abcrlda(model, test0)
-  res1 = predict_abcrlda(model, test1)
+  res0 = predict(model, test0)
+  res1 = predict(model, test1)
   nerr0 = sum(res0)
   nerr1 = sum(!res1)
   err0 = nerr0/length(res0)
@@ -55,17 +55,11 @@ plott <- function(model, x, grouping, start = -2, finish = 2){
   legend('topright', c("1", "0"), col=c('blue', 'red'), pch=c(16,16))
 }
 
-gen <- generate_train_test()
+gen <- generate_train_test(p1=c(1, 1, 0.5))
 train <- gen$train
 train_label <- gen$train_label
 test <- gen$test
 test_label <- gen$test_label
-
-model <- abcrlda(train, train1, gamma = 0.5, cost_10 = 0.5)
-err(model, test, test_label)
-
-plott(model, train, train_label)
-plott(model, test, test_label)
 
 # ----------
 crange <- seq(0.05, 0.95, by=0.05)
@@ -91,8 +85,27 @@ err(model_s1, test, test_label)
 plott(model_s0, train, train_label)
 plott(model_s1, train, train_label)
 
-x <- train
-shufled_index <- sample(nrow(x))
-train_label[shufled_index]
 ##########
+
+model <- abcrlda::abcrlda(train, train_label, gamma = 0.5, cost_10 = 0.5)
+err(model, test, test_label)
+
+predict(model, test)
+
+plott(model, train, train_label)
+plott(model, test, test_label)
+
+
+######3
+
+data(iris)
+
+traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
+                              iris[,ncol(iris)]=="versicolor"), 1:4]
+trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
+                                iris[,ncol(iris)]=="versicolor"), 5])
+
+rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
+
+
 
