@@ -9,22 +9,16 @@
 #' @param method selects method to evaluete error. "estimator" and "cross"
 #' @param k_fold number of fold to use with cross-validation
 #'
-#' @return
+#' @return List of best founded parameters
 #' @export
 #'
 #' @examples
-#' crange <- seq(0.05, 0.95, by=0.05)
-#' grange <- seq(0.01, 10.1, by=0.5)
-#' gs0 <- grid_search(train, train_label,
+#' range <- seq(0.05, 0.95, by=0.05)
+#' gs <- grid_search(train, train_label,
 #'                    range_gamma = grange,
 #'                    range_C_10 = crange,
 #'                    method = "estimator")
-#' gs1 <- grid_search(train, train_label,
-#'                    range_gamma = grange,
-#'                    range_C_10 = crange,
-#'                    method = "cross")
-#' model_s0 = abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
-#' model_s1 = abcrlda(train, train_label, gamma = gs1$gamma[1], cost_10 = gs1$C_10[1])
+#' model <- abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
 grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator",
                         k_fold=10){
 
@@ -58,17 +52,17 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator"
 }
 
 #' Title
+#' @inheritParams grid_search
+#' @param gamma regularization parameter
+#' @param C_10 parameter that controls prioretization of classes.
+#' It's value should be between 0 and 1 (0 < cost_10 < 1)
+#' Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
 #'
-#' @param x
-#' @param grouping
-#' @param gamma
-#' @param C_10
-#' @param kfolds
-#'
-#' @return
+#' @return Returns average error of cross validation
 #' @export
+#' @family abcrlda binary classifier
 #'
-#' @examples
+#' @inherit grid_search examples
 cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
   shufled_index <- sample(nrow(x))
   x <- x[shufled_index,]
@@ -109,13 +103,11 @@ cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
 
 
 #' Title
+#' @inheritParams predict.abcrlda
 #'
-#' @param object
+#' @return Estimated risk based on "abcrlda" object
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @inherit grid_search examples
 risk_estimate_20 <- function(object){
   ## check requirements
   if(class(object) != "abcrlda")
@@ -129,13 +121,12 @@ risk_estimate_20 <- function(object){
 
 #' Title
 #'
-#' @param object
-#' @param i
+#' @inheritParams predict.abcrlda
+#' @param i class index, should be 0 or 1
 #'
-#' @return
-#' @export
+#' @return Estimated error based on "abcrlda" object
 #'
-#' @examples
+#' @inherit grid_search examples
 error_estimate_29 <- function(object, i){
   ## check requirements
   if(class(object) != "abcrlda")

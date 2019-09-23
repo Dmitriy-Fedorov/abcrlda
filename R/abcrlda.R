@@ -21,6 +21,7 @@
 #'   \item{lev}{Levels. Corresponds to the groups.}
 #' }
 #' @export
+#' @family abcrlda binary classifier
 #' @examples
 #' data(iris)
 #' traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
@@ -107,9 +108,10 @@ abcrlda <- function(x, grouping, gamma, cost_10 = 0.5){  # cost_01 = 1 -  cost_1
 #' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
-#' @param class Class prediction for each observation.
-#' @param raw Raw values.
+#'  class Class prediction for each observation.
+#'  raw Raw values.
 #' @export
+#' @family abcrlda binary classifier
 #'
 #' @examples
 #' data(iris)
