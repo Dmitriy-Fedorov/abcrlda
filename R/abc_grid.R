@@ -1,17 +1,30 @@
 
 #' Title
+#' @description asd
 #'
-#' @param x
-#' @param grouping
-#' @param range_gamma
-#' @param range_C_10
-#' @param method
-#' @param k_fold
+#' @param x Matrix or data.frame of observations.
+#' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).
+#' @param range_gamma vector of gamma values to check
+#' @param range_C_10 vector of cost values to check
+#' @param method selects method to evaluete error. "estimator" and "cross"
+#' @param k_fold number of fold to use with cross-validation
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#' crange <- seq(0.05, 0.95, by=0.05)
+#' grange <- seq(0.01, 10.1, by=0.5)
+#' gs0 <- grid_search(train, train_label,
+#'                    range_gamma = grange,
+#'                    range_C_10 = crange,
+#'                    method = "estimator")
+#' gs1 <- grid_search(train, train_label,
+#'                    range_gamma = grange,
+#'                    range_C_10 = crange,
+#'                    method = "cross")
+#' model_s0 = abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
+#' model_s1 = abcrlda(train, train_label, gamma = gs1$gamma[1], cost_10 = gs1$C_10[1])
 grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator",
                         k_fold=10){
 

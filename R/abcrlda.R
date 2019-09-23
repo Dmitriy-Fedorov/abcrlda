@@ -1,15 +1,34 @@
 
-#' Title
+#' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive Binary Classification
+#' @description Performs symptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #'
-#' @param x
-#' @param grouping
-#' @param gamma
-#' @param cost_10
+#' @param x Matrix or data.frame of observations.
+#' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).
+#' @param gamma regularization parameter
+#' @param cost_10 parameter that controls prioretization of classes.
+#' It's value should be between 0 and 1 (0 < cost_10 < 1)
+#' Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
 #'
-#' @return
+#' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
+#' \describe{
+#'   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m}
+#'   \item{m}{Bias term. W(x) = a'x + m}
+#'   \item{cost_10}{asd}
+#'   \item{gamma}{asd}
+#'   \item{Ghat0, Ghat1}{asd}
+#'   \item{Dhat}{asd}
+#'   \item{omegaopt}{asd}
+#'   \item{lev}{Levels. Corresponds to the groups.}
+#' }
 #' @export
-#'
 #' @examples
+#' data(iris)
+#' traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
+#'                         iris[,ncol(iris)]=="versicolor"), 1:4]
+#' trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
+#'                                 iris[,ncol(iris)]=="versicolor"), 5])
+#' rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
+#' predict(rr, traindata)
 abcrlda <- function(x, grouping, gamma, cost_10 = 0.5){  # cost_01 = 1 -  cost_10
 
   ## check requirements
@@ -81,16 +100,26 @@ abcrlda <- function(x, grouping, gamma, cost_10 = 0.5){  # cost_01 = 1 -  cost_1
 }
 
 
-#' Title
-#'
-#' @param object
-#' @param x
+#' Class Prediction for abcrlda objects
+#' @description Computes class predictions for new data based on a given abcrlda object
+#' @param object An object of class "abcrlda".
+#' @param x New data for which the classes are to predict
+#' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
+#' @param class Class prediction for each observation.
+#' @param raw Raw values.
 #' @export
 #'
 #' @examples
-predict.abcrlda <- function(object, x){
+#' data(iris)
+#' traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
+#'                         iris[,ncol(iris)]=="versicolor"), 1:4]
+#' trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
+#'                                 iris[,ncol(iris)]=="versicolor"), 5])
+#' rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
+#' predict(rr, traindata)
+predict.abcrlda <- function(object, x, ...){
   ## check requirements
   if(class(object) != "abcrlda")
     stop("object has to be of type abcrlda")
