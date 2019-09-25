@@ -1,11 +1,12 @@
 Package: abcrlda
 Type: Package
 Title: Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
-Version: 0.0.0.9000
+Version: 0.1.0
 Author: Dmitriy Fedorov <dmitriy.fedorov@nu.edu.kz>
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: Some text
-    asd asjbd
+Maintainer: Dmitriy Fedorov <dmitriy.fedorov@nu.edu.kz>
+Description: This package offers methods to perform 
+    asymptotically bias-corrected regularized linear discriminant analysis 
+    for cost-sensitive binary classification
 License: MIT
 Encoding: UTF-8
 LazyData: true
