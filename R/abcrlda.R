@@ -1,25 +1,28 @@
 
-#' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive Binary Classification
+#' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
+#' for Cost-Sensitive Binary Classification
 #' @description Performs symptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #'
 #' @param x Matrix or data.frame of observations.
-#' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).
+#' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended.
+#' Length has to correspond to nrow(x).
 #' @param gamma regularization parameter
 #' @param cost_10 parameter that controls prioretization of classes.
 #' It's value should be between 0 and 1 (0 < cost_10 < 1)
-#' Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
+#' Values bigger than 0.5 prioretizes correct classification of 0 class while values
+#' less than 0.5 prioretizes 1 class
 #'
 #' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
-#' \describe{
-#'   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m}
-#'   \item{m}{Bias term. W(x) = a'x + m}
-#'   \item{cost_10}{asd}
-#'   \item{gamma}{asd}
-#'   \item{Ghat0, Ghat1}{asd}
-#'   \item{Dhat}{asd}
-#'   \item{omegaopt}{asd}
-#'   \item{lev}{Levels. Corresponds to the groups.}
-#' }
+#'   \item{a }{Slope of a discriminant hyperplane. W(x) = a'x + m}
+#'   \item{m }{Bias term. W(x) = a'x + m}
+#'   \item{cost_10 }{asd}
+#'   \item{gamma }{asd}
+#'   \item{Ghat0}{asd}
+#'   \item{Ghat1}{asd}
+#'   \item{Dhat }{asd}
+#'   \item{omegaopt }{asd}
+#'   \item{lev }{Levels. Corresponds to the groups.}
+#'
 #' @export
 #' @family abcrlda binary classifier
 #' @examples
@@ -39,8 +42,6 @@ abcrlda <- function(x, grouping, gamma, cost_10 = 0.5){  # cost_01 = 1 -  cost_1
   x <- as.matrix(x)
   if (any(!is.finite(x)))
     stop("Infinite, NA or NaN values in 'x'")
-
-
 
   p <- ncol(x)  # number of dimensions
   n <- nrow(x)  # number of samples

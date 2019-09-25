@@ -83,12 +83,12 @@ cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
     abcrlda_model <- abcrlda(trainData, trainLabel, gamma, C_10)
     test0 <- testData[testLabel == 0,]
     test1 <- testData[testLabel == 1,]
-    res0 <- predict_abcrlda(abcrlda_model, test0)
-    res1 <- predict_abcrlda(abcrlda_model, test1)
-    nerr0 <- sum(res0)
-    nerr1 <- sum(!res1)
-    err0 <- nerr0/length(res0)
-    err1 <- nerr1/length(res1)
+    res0 <- predict(abcrlda_model, test0)
+    res1 <- predict(abcrlda_model, test1)
+    nerr0 <- sum(res0$raw)
+    nerr1 <- sum(!res1$raw)
+    err0 <- nerr0/length(res0$raw)
+    err1 <- nerr1/length(res1$raw)
 
     error <- err0*C_10 + err1*(1 - C_10)
 
