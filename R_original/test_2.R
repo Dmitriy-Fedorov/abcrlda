@@ -33,10 +33,10 @@ err <- function(model, test, grouping){
   test1 <- test[grouping == 1,]
   res0 = predict(model, test0)
   res1 = predict(model, test1)
-  nerr0 = sum(res0)
-  nerr1 = sum(!res1)
-  err0 = nerr0/length(res0)
-  err1 = nerr1/length(res1)
+  nerr0 = sum(res0$raw)
+  nerr1 = sum(!res1$raw)
+  err0 = nerr0/length(res0$raw)
+  err1 = nerr1/length(res1$raw)
   return(structure(list(err0 = err0, err1 = err1,
                         errTotal = (nerr0 + nerr1)/length(grouping),
                         errCost = err0*model$cost_10 + err1*(1-model$cost_10))))
@@ -50,50 +50,47 @@ plott <- function(model, x, grouping, start = -2, finish = 2){
   grouping[index] <- rgb(red = 1, green = 0, blue = 0, alpha = 0.5)
   grouping[-index] <- rgb(red = 0, green = 0, blue = 1, alpha = 0.5)
   plot(x, col = grouping,
-       xlim=c(-2, 2), ylim = c(-1.5,3.5), pch = 16,cex = .35)
+       xlim=c(-2, 2), ylim = c(-1.5,3.5), pch = 16,cex = .8)
   lines(separator, lwd=3)
   legend('topright', c("1", "0"), col=c('blue', 'red'), pch=c(16,16))
 }
 
 gen <- generate_train_test(p1=c(1, 1, 0.5))
-train <- gen$train
-train_label <- gen$train_label
-test <- gen$test
-test_label <- gen$test_label
 
 # ----------
 crange <- seq(0.05, 0.95, by=0.05)
 grange <- seq(0.01, 10.1, by=0.5)
-gs0 <- grid_search(train, train_label,
+gs0 <- grid_search(gen$train, gen$train_label,
                   range_gamma = grange,
                   range_C_10 = crange,
                   method = "estimator")
 
-gs1 <- grid_search(train, train_label,
+gs1 <- grid_search(gen$train, gen$train_label,
                    range_gamma = grange,
                    range_C_10 = crange,
                    method = "cross")
 gs0
 gs1
 
-model_s0 = abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
-model_s1 = abcrlda(train, train_label, gamma = gs1$gamma[1], cost_10 = gs1$C_10[1])
+model_s0 = abcrlda(gen$train, gen$train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
+model_s1 = abcrlda(gen$train, gen$train_label, gamma = gs1$gamma[1], cost_10 = gs1$C_10[1])
 
-err(model_s0, test, test_label)
-err(model_s1, test, test_label)
+err(model_s0, gen$test, gen$test_label)
+err(model_s1, gen$test, gen$test_label)
 
-plott(model_s0, train, train_label)
-plott(model_s1, train, train_label)
+plott(model_s0, gen$train, gen$train_label)
+plott(model_s1, gen$train, gen$train_label)
 
 ##########
 
-model <- abcrlda::abcrlda(train, train_label, gamma = 0.5, cost_10 = 0.5)
-err(model, test, test_label)
+gen <- generate_train_test(N=1000, p1=c(0, 2, 0.5))
+model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost_10 = 0.2)
+err(model, gen$test, gen$test_label)
 
-predict(model, test)
+# predict(model, gen$test)
 
-plott(model, train, train_label)
-plott(model, test, test_label)
+plott(model, gen$train, gen$train_label)
+plott(model, gen$test, gen$test_label)
 
 
 ######3
@@ -106,6 +103,5 @@ trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
                                 iris[,ncol(iris)]=="versicolor"), 5])
 
 rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
-
-
+predict(rr, traindata)
 
