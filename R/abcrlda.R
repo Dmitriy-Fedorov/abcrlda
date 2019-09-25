@@ -6,33 +6,26 @@
 #' @param x Matrix or data.frame of observations.
 #' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended.
 #' Length has to correspond to nrow(x).
-#' @param gamma regularization parameter
-#' @param cost_10 parameter that controls prioretization of classes.
+#' @param gamma Regularization parameter.
+#' @param cost_10 Parameter that controls prioretization of classes.
 #' It's value should be between 0 and 1 (0 < cost_10 < 1)
 #' Values bigger than 0.5 prioretizes correct classification of 0 class while values
-#' less than 0.5 prioretizes 1 class
+#' less than 0.5 prioretizes 1 class.
 #'
 #' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
-#'   \item{a }{Slope of a discriminant hyperplane. W(x) = a'x + m}
-#'   \item{m }{Bias term. W(x) = a'x + m}
-#'   \item{cost_10 }{asd}
-#'   \item{gamma }{asd}
-#'   \item{Ghat0}{asd}
-#'   \item{Ghat1}{asd}
-#'   \item{Dhat }{asd}
-#'   \item{omegaopt }{asd}
-#'   \item{lev }{Levels. Corresponds to the groups.}
+#'   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
+#'   \item{m}{Bias term. W(x) = a'x + m.}
+#'   \item{cost_10}{Normilized cost such that cost_10 + cost_01 == 1.}
+#'   \item{gamma}{Regularization parameter.}
+#'   \item{Ghat0}{How do I call it?.}
+#'   \item{Ghat1}{How do I call it?.}
+#'   \item{Dhat}{How do I call it?.}
+#'   \item{omegaopt}{Optimized bias term such that overall risk is minimized. }
+#'   \item{lev}{Levels. Corresponds to the groups.}
 #'
 #' @export
 #' @family abcrlda binary classifier
-#' @examples
-#' data(iris)
-#' traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
-#'                         iris[,ncol(iris)]=="versicolor"), 1:4]
-#' trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
-#'                                 iris[,ncol(iris)]=="versicolor"), 5])
-#' rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
-#' predict(rr, traindata)
+#' @example example_abcrlda.txt
 abcrlda <- function(x, grouping, gamma, cost_10=0.5, cost_01=0.5){
 
   ## check requirements
@@ -68,7 +61,7 @@ abcrlda <- function(x, grouping, gamma, cost_10=0.5, cost_01=0.5){
   Hinv <- (diag(ncol(x)) + gamma * S)
   H <- solve(Hinv)
   # ------ -- - - -- - - - - -
-  C_10 <- C_10 / (C_10 + C_01)  # normalization
+  cost_10 <- cost_10 / (cost_10 + cost_01)  # normalization
   m0 <- colMeans(x0)
   m1 <- colMeans(x1)
   mdif <- m0 - m1
@@ -115,14 +108,7 @@ abcrlda <- function(x, grouping, gamma, cost_10=0.5, cost_01=0.5){
 #' @export
 #' @family abcrlda binary classifier
 #'
-#' @examples
-#' data(iris)
-#' traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
-#'                         iris[,ncol(iris)]=="versicolor"), 1:4]
-#' trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
-#'                                 iris[,ncol(iris)]=="versicolor"), 5])
-#' rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
-#' predict(rr, traindata)
+#' @example example_abcrlda.txt
 predict.abcrlda <- function(object, x, ...){
   ## check requirements
   if (class(object) != "abcrlda")

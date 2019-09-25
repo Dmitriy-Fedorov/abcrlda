@@ -1,6 +1,6 @@
 
-#' Title
-#' @description asd
+#' Grid Search
+#' @description Performs grid search based on cross validation or error estimation formula.
 #'
 #' @param x Matrix or data.frame of observations.
 #' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).
@@ -19,16 +19,16 @@
 #'                    range_C_10 = crange,
 #'                    method = "estimator")
 #' model <- abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
-grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator",
-                        k_fold=10){
+grid_search <- function(x, grouping, range_gamma, range_C_10, range_C_01=NULL,
+                        method="estimator", k_fold=10){
 
   list_gamma <- numeric()
   list_C_10 <- numeric()
   list_estimates <- numeric()
 
-  if(method == "estimator"){
-    for(gamma in range_gamma){
-      for(C_10 in range_C_10){
+  if (method == "estimator"){
+    for (gamma in range_gamma){
+      for (C_10 in range_C_10){
         abcrlda_model <- abcrlda(x, grouping, gamma, C_10)
         list_gamma <- c(list_gamma, gamma)
         list_C_10 <- c(list_C_10, C_10)
@@ -40,7 +40,8 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator"
       for(C_10 in range_C_10){
         list_gamma <- c(list_gamma, gamma)
         list_C_10 <- c(list_C_10, C_10)
-        list_estimates <- c(list_estimates, cross_validation(x, grouping, gamma, C_10, k_fold))
+        list_estimates <- c(list_estimates,
+                            cross_validation(x, grouping, gamma, C_10, k_fold))
       }
     }
   }
@@ -51,7 +52,7 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, method="estimator"
   )))
 }
 
-#' Title
+#' Cross Validation
 #' @inheritParams grid_search
 #' @param gamma regularization parameter
 #' @param C_10 parameter that controls prioretization of classes.

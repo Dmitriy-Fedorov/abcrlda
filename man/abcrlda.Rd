@@ -5,7 +5,7 @@
 \title{Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 for Cost-Sensitive Binary Classification}
 \usage{
-abcrlda(x, grouping, gamma, cost_10 = 0.5)
+abcrlda(x, grouping, gamma, cost_10 = 0.5, cost_01 = 0.5)
 }
 \arguments{
 \item{x}{Matrix or data.frame of observations.}
@@ -13,36 +13,36 @@ abcrlda(x, grouping, gamma, cost_10 = 0.5)
 \item{grouping}{Grouping variable. A vector of numeric values 0 and 1 is recommended.
 Length has to correspond to nrow(x).}
 
-\item{gamma}{regularization parameter}
+\item{gamma}{Regularization parameter.}
 
-\item{cost_10}{parameter that controls prioretization of classes.
+\item{cost_10}{Parameter that controls prioretization of classes.
 It's value should be between 0 and 1 (0 < cost_10 < 1)
 Values bigger than 0.5 prioretizes correct classification of 0 class while values
-less than 0.5 prioretizes 1 class}
+less than 0.5 prioretizes 1 class.}
 }
 \value{
 An object of class "rrlda" is returned which can be used for class prediction (see predict())
-  \item{a }{Slope of a discriminant hyperplane. W(x) = a'x + m}
-  \item{m }{Bias term. W(x) = a'x + m}
-  \item{cost_10 }{asd}
-  \item{gamma }{asd}
-  \item{Ghat0}{asd}
-  \item{Ghat1}{asd}
-  \item{Dhat }{asd}
-  \item{omegaopt }{asd}
-  \item{lev }{Levels. Corresponds to the groups.}
+  \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
+  \item{m}{Bias term. W(x) = a'x + m.}
+  \item{cost_10}{Normilized cost such that cost_10 + cost_01 == 1.}
+  \item{gamma}{Regularization parameter.}
+  \item{Ghat0}{How do I call it?.}
+  \item{Ghat1}{How do I call it?.}
+  \item{Dhat}{How do I call it?.}
+  \item{omegaopt}{Optimized bias term such that overall risk is minimized. }
+  \item{lev}{Levels. Corresponds to the groups.}
 }
 \description{
 Performs symptotically Bias-Corrected Regularized Linear Discriminant Analysis
 }
 \examples{
 data(iris)
-traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
-                        iris[,ncol(iris)]=="versicolor"), 1:4]
-trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
-                                iris[,ncol(iris)]=="versicolor"), 5])
-rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
-predict(rr, traindata)
+traindata <- iris[which(iris[, ncol(iris)] == "virginica" |
+                        iris[, ncol(iris)] == "versicolor"), 1:4]
+trainlabel <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
+                                iris[,ncol(iris)] == "versicolor"), 5])
+model <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
+predict(model, traindata)
 }
 \seealso{
 Other abcrlda binary classifier: \code{\link{cross_validation}},
