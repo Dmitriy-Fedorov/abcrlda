@@ -5,7 +5,7 @@
 \title{Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 for Cost-Sensitive Binary Classification}
 \usage{
-abcrlda(x, grouping, gamma, cost_10 = 0.5, cost_01 = 0.5)
+abcrlda(x, grouping, gamma, cost_10 = NULL, cost_01 = NULL)
 }
 \arguments{
 \item{x}{Matrix or data.frame of observations.}
@@ -15,10 +15,12 @@ Length has to correspond to nrow(x).}
 
 \item{gamma}{Regularization parameter.}
 
-\item{cost_10}{Parameter that controls prioretization of classes.
+\item{cost_10}{Parameter that controls priorety of class 0.
 It's value should be between 0 and 1 (0 < cost_10 < 1)
 Values bigger than 0.5 prioretizes correct classification of 0 class while values
 less than 0.5 prioretizes 1 class.}
+
+\item{cost_01}{Parameter that controls priorety of class 0.}
 }
 \value{
 An object of class "rrlda" is returned which can be used for class prediction (see predict())

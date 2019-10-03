@@ -2,7 +2,7 @@
 % Please edit documentation in R/abc_grid.R
 \name{cross_validation}
 \alias{cross_validation}
-\title{Title}
+\title{Cross Validation}
 \usage{
 cross_validation(x, grouping, gamma, C_10, kfolds = 10)
 }
@@ -16,20 +16,29 @@ cross_validation(x, grouping, gamma, C_10, kfolds = 10)
 \item{C_10}{parameter that controls prioretization of classes.
 It's value should be between 0 and 1 (0 < cost_10 < 1)
 Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class}
+
+\item{kfolds}{Number of for cross validation algorithm}
 }
 \value{
 Returns average error of cross validation
 }
 \description{
-Title
+Cross Validation
 }
 \examples{
-range <- seq(0.05, 0.95, by=0.05)
-gs <- grid_search(train, train_label,
-                   range_gamma = grange,
-                   range_C_10 = crange,
-                   method = "estimator")
-model <- abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
+data(iris)
+train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
+                        iris[, ncol(iris)] == "versicolor"), 1:4]
+train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
+                                iris[,ncol(iris)] == "versicolor"), 5])
+cost_range <- seq(0.1, 0.9, by=0.2)
+gamma_range <- c(0.1,1,10,100,1000)
+
+gs <- grid_search(train_data, train_label,
+                  range_gamma = gamma_range,
+                  range_C_10 = cost_range,
+                  method = "estimator")
+model <- abcrlda(train_data, train_label, gamma = gs$gamma[1], cost_10 = gs$C_10[1])
 }
 \seealso{
 Other abcrlda binary classifier: \code{\link{abcrlda}},
