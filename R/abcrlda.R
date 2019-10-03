@@ -2,16 +2,15 @@
 #' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #' for Cost-Sensitive Binary Classification
 #' @description Performs symptotically Bias-Corrected Regularized Linear Discriminant Analysis
-#'
 #' @param x Matrix or data.frame of observations.
 #' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended.
 #' Length has to correspond to nrow(x).
 #' @param gamma Regularization parameter.
-#' @param cost_10 Parameter that controls prioretization of classes.
+#' @param cost_10 Parameter that controls priorety of class 0.
 #' It's value should be between 0 and 1 (0 < cost_10 < 1)
 #' Values bigger than 0.5 prioretizes correct classification of 0 class while values
 #' less than 0.5 prioretizes 1 class.
-#'
+#' @param cost_01 Parameter that controls priorety of class 0.
 #' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
 #'   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
 #'   \item{m}{Bias term. W(x) = a'x + m.}
@@ -25,8 +24,8 @@
 #'
 #' @export
 #' @family abcrlda binary classifier
-#' @example example_abcrlda.txt
-abcrlda <- function(x, grouping, gamma, cost_10=0.5, cost_01=0.5){
+#' @example inst/examples/example_abcrlda.R
+abcrlda <- function(x, grouping, gamma, cost_10=NULL, cost_01=NULL){
 
   ## check requirements
   if (is.null(dim(x)))
@@ -55,13 +54,26 @@ abcrlda <- function(x, grouping, gamma, cost_10=0.5, cost_01=0.5){
   x1 <- x[grouping == lev[2], ]
   n0 <- nrow(x0) # number of samples in x0
   n1 <- nrow(x1) # number of samples in x1
-  S0 <- cov(x0)
-  S1 <- cov(x1)
+  S0 <- stats::cov(x0)
+  S1 <- stats::cov(x1)
   S <- ( (n0 - 1) * S0 + (n1 - 1) * S1) / (n0 + n1 - 2)
   Hinv <- (diag(ncol(x)) + gamma * S)
   H <- solve(Hinv)
   # ------ -- - - -- - - - - -
-  cost_10 <- cost_10 / (cost_10 + cost_01)  # normalization
+  if (is.null(cost_01) & is.null(cost_10)){
+    cost_10 <- 0.5  # default value
+  }else if (is.null(cost_01)){
+    if (cost_10 >= 1 | cost_10 <= 0)
+      stop("cost_10 should be between 0 and 1 when cost_01 is not specified")
+    cost_10 <- cost_10
+  }else if (is.null(cost_10)){
+    if (cost_01 >= 1 | cost_01 <= 0)
+      stop("cost_01 should be between 0 and 1 when cost_10 is not specified")
+    cost_10 <- 1 - cost_01
+  }else{
+    cost_10 <- cost_10 / (cost_10 + cost_01)  # normalization
+  }
+
   m0 <- colMeans(x0)
   m1 <- colMeans(x1)
   mdif <- m0 - m1
@@ -108,7 +120,7 @@ abcrlda <- function(x, grouping, gamma, cost_10=0.5, cost_01=0.5){
 #' @export
 #' @family abcrlda binary classifier
 #'
-#' @example example_abcrlda.txt
+#' @example inst/examples/example_abcrlda.R
 predict.abcrlda <- function(object, x, ...){
   ## check requirements
   if (class(object) != "abcrlda")

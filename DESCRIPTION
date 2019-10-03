@@ -7,7 +7,8 @@ Maintainer: Dmitriy Fedorov <dmitriy.fedorov@nu.edu.kz>
 Description: This package offers methods to perform 
     asymptotically bias-corrected regularized linear discriminant analysis 
     for cost-sensitive binary classification.
-License: MIT
+Imports: stats
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1

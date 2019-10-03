@@ -6,19 +6,15 @@
 #' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).
 #' @param range_gamma vector of gamma values to check
 #' @param range_C_10 vector of cost values to check
+#' @param range_C_01 vector of cost values to check
 #' @param method selects method to evaluete error. "estimator" and "cross"
 #' @param k_fold number of fold to use with cross-validation
 #'
 #' @return List of best founded parameters
 #' @export
 #'
-#' @examples
-#' range <- seq(0.05, 0.95, by=0.05)
-#' gs <- grid_search(train, train_label,
-#'                    range_gamma = grange,
-#'                    range_C_10 = crange,
-#'                    method = "estimator")
-#' model <- abcrlda(train, train_label, gamma = gs0$gamma[1], cost_10 = gs0$C_10[1])
+#' @example inst/examples/example_grid.R
+
 grid_search <- function(x, grouping, range_gamma, range_C_10, range_C_01=NULL,
                         method="estimator", k_fold=10){
 
@@ -58,12 +54,12 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, range_C_01=NULL,
 #' @param C_10 parameter that controls prioretization of classes.
 #' It's value should be between 0 and 1 (0 < cost_10 < 1)
 #' Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
-#'
+#' @param kfolds Number of for cross validation algorithm
 #' @return Returns average error of cross validation
 #' @export
 #' @family abcrlda binary classifier
 #'
-#' @inherit grid_search examples
+#' @example inst/examples/example_grid.R
 cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
   shufled_index <- sample(nrow(x))
   x <- x[shufled_index,]
@@ -84,18 +80,15 @@ cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
     abcrlda_model <- abcrlda(trainData, trainLabel, gamma, C_10)
     test0 <- testData[testLabel == 0,]
     test1 <- testData[testLabel == 1,]
-    res0 <- predict(abcrlda_model, test0)
-    res1 <- predict(abcrlda_model, test1)
+    res0 <- stats::predict(abcrlda_model, test0)
+    res1 <- stats::predict(abcrlda_model, test1)
     nerr0 <- sum(res0$raw)
     nerr1 <- sum(!res1$raw)
     err0 <- nerr0/length(res0$raw)
     err1 <- nerr1/length(res1$raw)
 
     error <- err0*C_10 + err1*(1 - C_10)
-
-    # predictions <- predict_abcrlda(abcrlda_model, testData)
-    # error <- sum(predictions != testLabel) / length(testLabel)
-    # print(error)
+    # print(paste(i, error, mean(e_cross)))
     e_cross <- c(e_cross, error)
   }
   return(mean(e_cross))
@@ -103,12 +96,13 @@ cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
 
 
 
-#' Title
+#' Risk Estimator
+#' @description Calculates weighted error based on normalized cost values
 #' @inheritParams predict.abcrlda
 #'
-#' @return Estimated risk based on "abcrlda" object
-#'
-#' @inherit grid_search examples
+#' @return Weighted error based on "abcrlda" object
+#' @export
+#' @example inst/examples/example_grid.R
 risk_estimate_20 <- function(object){
   ## check requirements
   if(class(object) != "abcrlda")
@@ -120,14 +114,13 @@ risk_estimate_20 <- function(object){
 }
 
 
-#' Title
-#'
+#' Error Estimator
+#' @description Estimates error based on closed form formula.
 #' @inheritParams predict.abcrlda
 #' @param i class index, should be 0 or 1
-#'
 #' @return Estimated error based on "abcrlda" object
-#'
-#' @inherit grid_search examples
+#' @export
+#' @example inst/examples/example_grid.R
 error_estimate_29 <- function(object, i){
   ## check requirements
   if(class(object) != "abcrlda")
@@ -135,5 +128,5 @@ error_estimate_29 <- function(object, i){
 
   Ghat <- c(object$Ghat0, object$Ghat1)
   X <- (-1)^i * (Ghat[1+i] + object$omegaopt/object$gamma) / sqrt(object$Dhat)
-  return(1 - pnorm(X))
+  return(1 - stats::pnorm(X))
 }
