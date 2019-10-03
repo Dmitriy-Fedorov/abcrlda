@@ -3,6 +3,5 @@
 S3method(predict,abcrlda)
 export(abcrlda)
 export(cross_validation)
-export(error_estimate_29)
 export(grid_search)
 export(risk_estimate_20)
