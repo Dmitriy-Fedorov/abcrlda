@@ -6,26 +6,18 @@
 #' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended.
 #' Length has to correspond to nrow(x).
 #' @param gamma Regularization parameter.
-#' @param cost_10 Parameter that controls priorety of class 0.
-#' It's value should be between 0 and 1 (0 < cost_10 < 1)
-#' Values bigger than 0.5 prioretizes correct classification of 0 class while values
-#' less than 0.5 prioretizes 1 class.
-#' @param cost_01 Parameter that controls priorety of class 1.
+#' @param cost Parameter that controls priorety of class 0.
 #' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
 #'   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
 #'   \item{m}{Bias term. W(x) = a'x + m.}
-#'   \item{cost_10}{Normilized cost such that cost_10 + cost_01 == 1.}
+#'   \item{cost}{Normilized cost such that cost_10 + cost_01 == 1.}
 #'   \item{gamma}{Regularization parameter.}
-#'   \item{Ghat0}{How do I call it?.}
-#'   \item{Ghat1}{How do I call it?.}
-#'   \item{Dhat}{How do I call it?.}
-#'   \item{omegaopt}{Optimized bias term such that overall risk is minimized. }
 #'   \item{lev}{Levels. Corresponds to the groups.}
 #'
 #' @export
 #' @family abcrlda binary classifier
 #' @example inst/examples/example_abcrlda.R
-abcrlda <- function(x, grouping, gamma=1, cost_10=NULL, cost_01=NULL){
+abcrlda <- function(x, grouping, gamma=1, cost=c(0.5,0.5)){
 
   ## check requirements
   if (is.null(dim(x)))
@@ -59,20 +51,14 @@ abcrlda <- function(x, grouping, gamma=1, cost_10=NULL, cost_01=NULL){
   S <- ( (n0 - 1) * S0 + (n1 - 1) * S1) / (n0 + n1 - 2)
   Hinv <- (diag(ncol(x)) + gamma * S)
   H <- solve(Hinv)
-  # ------ -- - - -- - - - - -
-  if (is.null(cost_01) & is.null(cost_10)){
-    cost_10 <- 0.5  # default value
-  }else if (is.null(cost_01)){
-    if (cost_10 >= 1 | cost_10 <= 0)
-      stop("cost_10 should be between 0 and 1 when cost_01 is not specified")
-    cost_10 <- cost_10
-  }else if (is.null(cost_10)){
-    if (cost_01 >= 1 | cost_01 <= 0)
-      stop("cost_01 should be between 0 and 1 when cost_10 is not specified")
-    cost_10 <- 1 - cost_01
-  }else{
-    cost_10 <- cost_10 / (cost_10 + cost_01)  # normalization
+  # ----------------------------------------------------
+  if (length(cost) == 1){
+    if (cost >= 1 | cost <= 0)
+      stop("While providing single valued vector cost should be between 0 and 1 (not including)")
+    cost <- c(cost, 1 - cost)
   }
+  if (length(cost) != 2)
+    stop("cost vector should be of length 1 or 2, this is binary classifier")
 
   m0 <- colMeans(x0)
   m1 <- colMeans(x1)
@@ -80,24 +66,24 @@ abcrlda <- function(x, grouping, gamma=1, cost_10=NULL, cost_01=NULL){
   msum <- m1 + m0
   a <- H %*% mdif
   mt <- t(a) %*% msum
-  m_rlda <- -0.5 * mt - log( (1 - cost_10) / cost_10) / gamma
+  m_rlda <- -0.5 * mt - log( cost[2] / cost[1]) / gamma
   # ------- omega optimal calculation -------------
   trace_h <- sum(diag(H))  # sum of diagonal elements in H
   deltahat <- (p / (n0 + n1 - 2) - trace_h / (n0 + n1 - 2)) /
               (gamma * (1 - p / (n0 + n1 - 2) + trace_h / (n0 + n1 - 2)))
-  G0 <- 0.5 * t(m0 - m1) %*% H %*% mdif - log( (1 - cost_10) / cost_10) / gamma
-  G1 <- 0.5 * t(m1 - m0) %*% H %*% mdif - log( (1 - cost_10) / cost_10) / gamma
+  G0 <- 0.5 * t(m0 - m1) %*% H %*% mdif - log( cost[2] / cost[1]) / gamma
+  G1 <- 0.5 * t(m1 - m0) %*% H %*% mdif - log( cost[2] / cost[1]) / gamma
   Ghat0 <- G0 - ( (n0 + n1 - 2) / n0) * deltahat
   Ghat1 <- G1 + ( (n0 + n1 - 2) / n1) * deltahat
   D <- t(a) %*% S %*% a
   # D <- t(mdif) %*% H %*% S %*% H %*% mdif  # no difference, more explicit
   Dhat <- D * (1 + gamma * deltahat) ^ 2
-  omegaopt <- gamma * (Dhat * log( (1 - cost_10) / cost_10) / (Ghat1 - Ghat0) -
+  omegaopt <- gamma * (Dhat * log( cost[2] / cost[1]) / (Ghat1 - Ghat0) -
               0.5 * (Ghat0 + Ghat1))
   m_abcrlda <- as.numeric(m_rlda + omegaopt / gamma)
   return(structure(list(a = a,
                         m = m_abcrlda,
-                        cost_10 = cost_10,
+                        cost = cost,
                         gamma = gamma,
                         Ghat0 = Ghat0,
                         Ghat1 = Ghat1,
@@ -121,7 +107,7 @@ abcrlda <- function(x, grouping, gamma=1, cost_10=NULL, cost_01=NULL){
 #' @family abcrlda binary classifier
 #'
 #' @example inst/examples/example_abcrlda.R
-predict.abcrlda <- function(object, x, ...){
+predict.abcrlda <- function(object, x, type = "class", ...){
   ## check requirements
   if (class(object) != "abcrlda")
     stop("object has to be of type abcrlda")
@@ -132,7 +118,9 @@ predict.abcrlda <- function(object, x, ...){
   x <- as.matrix(x)
   pred <- as.numeric(x %*% object$a + object$m <= 0)
   cl <- object$lev[pred + 1]
-
-  return(list(class = cl, raw = pred))  # object$cost
+  if (type == "raw")
+    return(pred)
+  else if (type == "class")
+    return(as.factor(cl))
 
 }

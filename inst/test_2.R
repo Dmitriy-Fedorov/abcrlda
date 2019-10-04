@@ -104,8 +104,10 @@ model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost_10 = 5, co
 err(model, gen$test, gen$test_label)
 # confusionMatrix(reference = as.factor(gen$test_label),
 #                 data = as.factor((predict(model, gen$test))$raw))
-predict(model, gen$test)
-
+asd = predict(model, gen$test, type="raw")
+asd2 = predict(model, gen$test, type="class")
+all(asd == asd2)
+class(predict(model, gen$test, type="class"))
 plott(model, gen$train, gen$train_label)
 plott(model, gen$test, gen$test_label)
 
@@ -119,10 +121,15 @@ traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
 trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
                                 iris[,ncol(iris)]=="versicolor"), 5])
 
-rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost_10 = 0.75)
-predict(rr, traindata)
+rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost = 0.75)
+predict(rr, traindata, type="class")
 err(rr, traindata, as.numeric(trainlabel)-1)
 
+asd = predict(rr, traindata, type="raw")
+asd2 = predict(rr, traindata, type="class")
+all(asd == asd2)
+as.numeric(asd2)
+asd2
 # ------------ multivariate test -----------------------------------
 library(Matrix)
 library(matrixcalc)
@@ -181,4 +188,8 @@ confusionMatrix(reference = as.factor(gen$test_label),
                 data = as.factor((predict(model_s0, gen$test))$raw))
 confusionMatrix(reference = as.factor(gen$test_label),
                 data = as.factor((predict(model_s1, gen$test))$raw))
+
+qwe = matrix(seq(1, 10, by=1), ncol=2)
+for (i in qwe[,1])
+  print(i)
 
