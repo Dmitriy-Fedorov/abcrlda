@@ -6,6 +6,8 @@ library(mvtnorm)
 # N_test = 10000
 # p0 = c(0, 0, 0.5)  # mean x, mean y, standart deviation
 # p1 = c(1, 1, 0.5)
+# Sys.which("pdflatex")
+# devtools::build_manual()
 
 generate_train_test <- function(N=100, N_test=10000,
                                 p0=c(0, 0, 0.5), p1=c(0, 1, 0.5)){

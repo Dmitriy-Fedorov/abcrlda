@@ -59,8 +59,8 @@ grid_search <- function(x, grouping, range_gamma, range_C_10, range_C_01=NULL,
 #' @export
 #' @family abcrlda binary classifier
 #'
-#' @example inst/examples/example_grid.R
-cross_validation <- function(x, grouping, gamma, C_10, kfolds=10){
+#' @example inst/examples/example_cross.R
+cross_validation <- function(x, grouping, gamma=1, C_10=0.5, kfolds=10){
   shufled_index <- sample(nrow(x))
   x <- x[shufled_index, ]
   grouping <- grouping[shufled_index]

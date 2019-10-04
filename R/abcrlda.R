@@ -1,7 +1,7 @@
 
 #' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #' for Cost-Sensitive Binary Classification
-#' @description Performs symptotically Bias-Corrected Regularized Linear Discriminant Analysis
+#' @description Performs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #' @param x Matrix or data.frame of observations.
 #' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended.
 #' Length has to correspond to nrow(x).
@@ -10,7 +10,7 @@
 #' It's value should be between 0 and 1 (0 < cost_10 < 1)
 #' Values bigger than 0.5 prioretizes correct classification of 0 class while values
 #' less than 0.5 prioretizes 1 class.
-#' @param cost_01 Parameter that controls priorety of class 0.
+#' @param cost_01 Parameter that controls priorety of class 1.
 #' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
 #'   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
 #'   \item{m}{Bias term. W(x) = a'x + m.}
@@ -25,7 +25,7 @@
 #' @export
 #' @family abcrlda binary classifier
 #' @example inst/examples/example_abcrlda.R
-abcrlda <- function(x, grouping, gamma, cost_10=NULL, cost_01=NULL){
+abcrlda <- function(x, grouping, gamma=1, cost_10=NULL, cost_01=NULL){
 
   ## check requirements
   if (is.null(dim(x)))

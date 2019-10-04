@@ -1,8 +1,8 @@
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
-                        iris[, ncol(iris)] == "versicolor"), 1:4]
+                         iris[, ncol(iris)] == "versicolor"), 1:4]
 train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
-                                iris[, ncol(iris)] == "versicolor"), 5])
+                                 iris[, ncol(iris)] == "versicolor"), 5])
 cost_range <- seq(0.1, 0.9, by = 0.2)
 gamma_range <- c(0.1, 1, 10, 100, 1000)
 
