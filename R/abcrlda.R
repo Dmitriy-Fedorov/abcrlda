@@ -84,6 +84,7 @@ abcrlda <- function(x, grouping, gamma=1, cost=c(0.5,0.5)){
   return(structure(list(a = a,
                         m = m_abcrlda,
                         cost = cost,
+                        ncost = c(cost[1] / sum(cost), cost[2] / sum(cost)),
                         gamma = gamma,
                         Ghat0 = Ghat0,
                         Ghat1 = Ghat1,
@@ -98,6 +99,7 @@ abcrlda <- function(x, grouping, gamma=1, cost=c(0.5,0.5)){
 #' @description Computes class predictions for new data based on a given abcrlda object
 #' @param object An object of class "abcrlda".
 #' @param x New data for which the classes are to predict
+#' @param type TODO
 #' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
@@ -116,11 +118,10 @@ predict.abcrlda <- function(object, x, type = "class", ...){
     stop("'x' has to be a vector, matrix or data.frame")
 
   x <- as.matrix(x)
-  pred <- as.numeric(x %*% object$a + object$m <= 0)
-  cl <- object$lev[pred + 1]
+  pred <- as.numeric(x %*% object$a + object$m <= 0) + 1
+  cl <- object$lev[pred]
   if (type == "raw")
     return(pred)
   else if (type == "class")
     return(as.factor(cl))
-
 }

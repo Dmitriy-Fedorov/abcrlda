@@ -4,12 +4,14 @@
 \alias{predict.abcrlda}
 \title{Class Prediction for abcrlda objects}
 \usage{
-\method{predict}{abcrlda}(object, x, ...)
+\method{predict}{abcrlda}(object, x, type = "class", ...)
 }
 \arguments{
 \item{object}{An object of class "abcrlda".}
 
 \item{x}{New data for which the classes are to predict}
+
+\item{type}{TODO}
 
 \item{...}{Argument used by generic function predict(object, x, ...).}
 }
@@ -26,7 +28,7 @@ train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
                         iris[, ncol(iris)] == "versicolor"), 1:4]
 train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
                                 iris[, ncol(iris)] == "versicolor"), 5])
-model <- abcrlda(train_data, train_label, gamma = 0.5, cost_10 = 0.75)
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 predict(model, train_data)
 }
 \seealso{

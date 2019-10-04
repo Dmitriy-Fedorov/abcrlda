@@ -5,7 +5,7 @@
 \title{Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 for Cost-Sensitive Binary Classification}
 \usage{
-abcrlda(x, grouping, gamma = 1, cost_10 = NULL, cost_01 = NULL)
+abcrlda(x, grouping, gamma = 1, cost = c(0.5, 0.5))
 }
 \arguments{
 \item{x}{Matrix or data.frame of observations.}
@@ -15,23 +15,14 @@ Length has to correspond to nrow(x).}
 
 \item{gamma}{Regularization parameter.}
 
-\item{cost_10}{Parameter that controls priorety of class 0.
-It's value should be between 0 and 1 (0 < cost_10 < 1)
-Values bigger than 0.5 prioretizes correct classification of 0 class while values
-less than 0.5 prioretizes 1 class.}
-
-\item{cost_01}{Parameter that controls priorety of class 1.}
+\item{cost}{Parameter that controls priorety of class 0.}
 }
 \value{
 An object of class "rrlda" is returned which can be used for class prediction (see predict())
   \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
   \item{m}{Bias term. W(x) = a'x + m.}
-  \item{cost_10}{Normilized cost such that cost_10 + cost_01 == 1.}
+  \item{cost}{Normilized cost such that cost_10 + cost_01 == 1.}
   \item{gamma}{Regularization parameter.}
-  \item{Ghat0}{How do I call it?.}
-  \item{Ghat1}{How do I call it?.}
-  \item{Dhat}{How do I call it?.}
-  \item{omegaopt}{Optimized bias term such that overall risk is minimized. }
   \item{lev}{Levels. Corresponds to the groups.}
 }
 \description{
@@ -43,7 +34,7 @@ train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
                         iris[, ncol(iris)] == "versicolor"), 1:4]
 train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
                                 iris[, ncol(iris)] == "versicolor"), 5])
-model <- abcrlda(train_data, train_label, gamma = 0.5, cost_10 = 0.75)
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 predict(model, train_data)
 }
 \seealso{

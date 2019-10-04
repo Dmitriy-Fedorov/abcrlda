@@ -4,7 +4,8 @@
 \alias{cross_validation}
 \title{Cross Validation}
 \usage{
-cross_validation(x, grouping, gamma = 1, C_10 = 0.5, kfolds = 10)
+cross_validation(x, grouping, gamma = 1, cost = c(0.5, 0.5),
+  kfolds = 10)
 }
 \arguments{
 \item{x}{Matrix or data.frame of observations.}
@@ -13,7 +14,7 @@ cross_validation(x, grouping, gamma = 1, C_10 = 0.5, kfolds = 10)
 
 \item{gamma}{regularization parameter}
 
-\item{C_10}{parameter that controls prioretization of classes.
+\item{cost}{parameter that controls prioretization of classes.
 It's value should be between 0 and 1 (0 < cost_10 < 1)
 Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class}
 
@@ -31,7 +32,7 @@ train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
                          iris[, ncol(iris)] == "versicolor"), 1:4]
 train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
                                  iris[, ncol(iris)] == "versicolor"), 5])
-model <- abcrlda(train_data, train_label, gamma = 0.5, cost_10 = 0.75)
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 risk_estimate_20(model)
 }
 \seealso{

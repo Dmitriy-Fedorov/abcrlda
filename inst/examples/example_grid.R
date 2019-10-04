@@ -8,8 +8,8 @@ gamma_range <- c(0.1, 1, 10, 100, 1000)
 
 gs <- grid_search(train_data, train_label,
                   range_gamma = gamma_range,
-                  range_C_10 = cost_range,
+                  range_cost = cost_range,
                   method = "estimator")
 model <- abcrlda(train_data, train_label,
-                 gamma = gs$gamma[1], cost_10 = gs$C_10[1])
+                 gamma = gs$gamma[1], cost = gs$cost[1])
 predict(model, train_data)
