@@ -8,6 +8,8 @@ Description: This package offers methods to perform
     asymptotically bias-corrected regularized linear discriminant analysis 
     for cost-sensitive binary classification.
 Imports: stats
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
