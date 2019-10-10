@@ -150,9 +150,9 @@ cbind(a = rbind(t(as.data.frame(gs_e)), er_e),
 # rbind(t(as.data.frame(gs_c)), er_c)
 
 confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_s0, gen$test))$raw))
+                data = as.factor((predict(model_est, gen$test))$raw))
 confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_s1, gen$test))$raw))
+                data = as.factor((predict(model_crs, gen$test))$raw))
 
 
 # -------------------------------- iris dataset --------------------------------
@@ -165,9 +165,15 @@ trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
                                   iris[,ncol(iris)]=="versicolor"), 5])
 
 rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost = 0.75)
-predict(rr, traindata, type="class")
-err(rr, traindata, trainlabel)
+stats::predict(rr, traindata, type="raw")
+e = err(rr, traindata, trainlabel)
 
+rbind(e,
+      t(data.frame(
+        restimate = abcrlda::risk_estimate_20(rr),
+        cross = abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75,0.25)))
+      ))
+abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75, 0.25),kfolds = 3)
 # asd = predict(rr, traindata, type="raw")
 # asd2 = predict(rr, traindata, type="class")
 # all(asd == as.numeric(asd2))

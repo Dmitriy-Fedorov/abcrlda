@@ -64,11 +64,20 @@ grid_search <- function(x, grouping, range_gamma, range_cost,
 #'
 #' @example inst/examples/example_cross.R
 cross_validation <- function(x, grouping, gamma=1, cost=c(0.5, 0.5), kfolds=10){
+
   shufled_index <- sample(nrow(x))
   x <- x[shufled_index, ]
   grouping <- grouping[shufled_index]
   folds <- cut(seq(1, nrow(x)), breaks = kfolds, labels = FALSE)
   e_cross <- numeric()
+
+  if (!is.factor(grouping))
+    grouping <- as.factor(grouping)
+  lev <- levels(grouping)
+  k <- nlevels(grouping)
+
+  if (k != 2)
+    stop("number of groups != 2, this is binary classifier")
 
   if (length(cost) == 1){
     if (cost >= 1 | cost <= 0)
@@ -78,29 +87,38 @@ cross_validation <- function(x, grouping, gamma=1, cost=c(0.5, 0.5), kfolds=10){
   if (length(cost) != 2)
     stop("cost vector should be of length 1 or 2, this is binary classifier")
 
-
+  # print(cost)
   # print(paste("____________", gamma, C_10))
   for (i in 1:kfolds){
     # Segement your data by fold using the which() function
     test_indexes <- which(folds == i, arr.ind = TRUE)
+    # print(test_indexes)
     test_data <- x[test_indexes, ]
     test_label <- grouping[test_indexes]
     train_data <- x[-test_indexes, ]
     train_label <- grouping[-test_indexes]
+    # print(test_label)
 
     abcrlda_model <- abcrlda(train_data, train_label, gamma, cost)
-    test0 <- test_data[test_label == 0, ]
-    test1 <- test_data[test_label == 1, ]
+    # print(test_label)
+    test0 <- test_data[test_label == lev[1], ]
+    test1 <- test_data[test_label == lev[2], ]
+    # print(test0)
+    # print(test1)
     res0 <- stats::predict(abcrlda_model, test0, type="raw") - 1
     res1 <- stats::predict(abcrlda_model, test1, type="raw") - 1
+    # print(res0)
+    # print(res1)
     nerr0 <- sum(res0)
     nerr1 <- sum(!res1)
+    # print(c(nerr0, nerr1))
     err0 <- nerr0 / length(res0)
     err1 <- nerr1 / length(res1)
 
     error <- err0 * cost[1] + err1 * cost[2]
     e_cross <- c(e_cross, error)
   }
+  # print(e_cross)
   return(mean(e_cross))
 }
 
