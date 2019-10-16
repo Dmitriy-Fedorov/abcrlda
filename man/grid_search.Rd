@@ -4,13 +4,15 @@
 \alias{grid_search}
 \title{Grid Search}
 \usage{
-grid_search(x, grouping, range_gamma, range_cost, method = "estimator",
-  k_fold = 10)
+grid_search(x, y, range_gamma, range_cost, method = "estimator",
+  nfold = 10)
 }
 \arguments{
-\item{x}{Matrix or data.frame of observations.}
+\item{x}{Input matrix or data.frame , of dimension nobs x nvars; each row is an observation vector.}
 
-\item{grouping}{Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).}
+\item{y}{Class labels. Should be a factor with two levels, or a vector with two distinct values.
+If y is presented as a vector, it will be coerced into a factor.
+Length of y has to correspond to number of samples in x.}
 
 \item{range_gamma}{vector of gamma values to check}
 
@@ -18,7 +20,7 @@ grid_search(x, grouping, range_gamma, range_cost, method = "estimator",
 
 \item{method}{selects method to evaluete error. "estimator" and "cross"}
 
-\item{k_fold}{number of fold to use with cross-validation}
+\item{nfold}{number of fold to use with cross-validation}
 }
 \value{
 List of best founded parameters
@@ -43,3 +45,10 @@ model <- abcrlda(train_data, train_label,
                  gamma = gs$gamma[1], cost = gs$cost[1])
 predict(model, train_data)
 }
+\seealso{
+Other Other functions in the package: \code{\link{abcrlda}},
+  \code{\link{cross_validation}},
+  \code{\link{da_risk_estimator}},
+  \code{\link{predict.abcrlda}}
+}
+\concept{Other functions in the package}

@@ -11,6 +11,9 @@ library(corpcor)
 # p1 = c(1, 1, 0.5)
 # Sys.which("pdflatex")
 # devtools::build_manual()
+# lintr::lint_package()
+
+# glmnet
 
 generate_train_test <- function(N=100, N_test=10000,
                                 m0=c(0, 0), m1=c(0, 1), s0=diag(0.5,nrow = 2), s1=diag(0.5,nrow = 2)){
@@ -64,7 +67,7 @@ model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost = c(1,3))
 e = err(model, gen$test, gen$test_label)
 rbind(e,
   t(data.frame(
-    restimate = abcrlda::risk_estimate_20(model),
+    restimate = abcrlda::da_risk_estimator(model),
     cross = abcrlda::cross_validation(gen$train, gen$train_label, cost=c(1,3)))
   ))
 
@@ -78,7 +81,7 @@ plott(model, gen$train, gen$train_label)
 plott(model, gen$test, gen$test_label)
 # -------------------------------- 2D test grid_search --------------------------------
 gen <- generate_train_test(m0=c(0, 0), m1=c(0, 1))
-crange <- seq(0.05, 0.95, by=0.05)
+crange <- seq(0.4, 0.7, by=0.05)
 grange <- (c(5,10) %o% 10^(-1:3))
 gs_e <- grid_search(gen$train, gen$train_label,
                   range_gamma = grange,
@@ -99,8 +102,8 @@ er_c = err(model_crs, gen$test, gen$test_label)
 
 cbind(a = rbind(t(as.data.frame(gs_e)), er_e),
       b = rbind(t(as.data.frame(gs_c)), er_c))
-rbind(t(as.data.frame(gs_e)), er_e)
-rbind(t(as.data.frame(gs_c)), er_c)
+# rbind(t(as.data.frame(gs_e)), er_e)
+# rbind(t(as.data.frame(gs_c)), er_c)
 
 confusionMatrix(reference = as.factor(gen$test_label),
                 data = as.factor((predict(model_est, gen$test))),
@@ -125,7 +128,7 @@ gen <- generate_train_test(N=100,N_test=1000,
                            s1 = make.positive.definite(as.matrix(abs(
                              forceSymmetric(Matrix(rnorm(100),10)))), tol=1e-3))
 
-crange <- seq(0.05, 0.95, by=0.05)
+crange <- seq(0.3, 0.7, by=0.05)
 grange <- (c(5,10) %o% 10^(-1:3))
 gs_e <- grid_search(gen$train, gen$train_label,
                     range_gamma = grange,
@@ -150,9 +153,9 @@ cbind(a = rbind(t(as.data.frame(gs_e)), er_e),
 # rbind(t(as.data.frame(gs_c)), er_c)
 
 confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_est, gen$test))$raw))
+                data = as.factor((predict(model_est, gen$test))))
 confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_crs, gen$test))$raw))
+                data = as.factor((predict(model_crs, gen$test))))
 
 
 # -------------------------------- iris dataset --------------------------------
@@ -170,13 +173,11 @@ e = err(rr, traindata, trainlabel)
 
 rbind(e,
       t(data.frame(
-        restimate = abcrlda::risk_estimate_20(rr),
+        restimate = abcrlda::da_risk_estimator(rr),
         cross = abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75,0.25)))
       ))
 abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75, 0.25),kfolds = 3)
 # asd = predict(rr, traindata, type="raw")
 # asd2 = predict(rr, traindata, type="class")
 # all(asd == as.numeric(asd2))
-
-
 

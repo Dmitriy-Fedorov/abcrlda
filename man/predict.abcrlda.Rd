@@ -4,16 +4,18 @@
 \alias{predict.abcrlda}
 \title{Class Prediction for abcrlda objects}
 \usage{
-\method{predict}{abcrlda}(object, x, type = "class", ...)
+\method{predict}{abcrlda}(object, newx, out_type = "class", ...)
 }
 \arguments{
 \item{object}{An object of class "abcrlda".}
 
-\item{x}{New data for which the classes are to predict}
-
-\item{type}{TODO}
+\item{newx}{Matrix of new values for x at which predictions are to be made.}
 
 \item{...}{Argument used by generic function predict(object, x, ...).}
+
+\item{type}{Determines a type of output. Two type of input could be provided.
+If "class" value is provided this will return factor with levels corresponding to lev stored in object.
+If "raw" value is provided this will return numeric vector with values obtained from discriminant function.}
 }
 \value{
 class Class prediction for each observation.
@@ -22,6 +24,15 @@ class Class prediction for each observation.
 \description{
 Computes class predictions for new data based on a given abcrlda object
 }
+\section{Reference}{
+
+  A. Zollanvari, M. Abdirash, A. Dadlani and B. Abibullaev,
+  "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
+  Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
+  Sept. 2019. doi: 10.1109/LSP.2019.2918485
+  URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+}
+
 \examples{
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
@@ -32,7 +43,9 @@ model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 predict(model, train_data)
 }
 \seealso{
-Other abcrlda binary classifier: \code{\link{abcrlda}},
-  \code{\link{cross_validation}}
+Other Other functions in the package: \code{\link{abcrlda}},
+  \code{\link{cross_validation}},
+  \code{\link{da_risk_estimator}},
+  \code{\link{grid_search}}
 }
-\concept{abcrlda binary classifier}
+\concept{Other functions in the package}

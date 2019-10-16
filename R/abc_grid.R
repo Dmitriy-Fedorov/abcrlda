@@ -2,20 +2,24 @@
 #' Grid Search
 #' @description Performs grid search based on cross validation or error estimation formula.
 #'
-#' @param x Matrix or data.frame of observations.
-#' @param grouping Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).
+# @param x Matrix or data.frame of observations.
+# @param y Grouping variable. A vector of numeric values 0 and 1 is recommended.
+# Length has to correspond to nrow(x).
 #' @param range_gamma vector of gamma values to check
-#' @param range_cost [1 x n] vector or [2 x n] matrix of cost values to check
+#' @param range_cost nobs x 1 vector (values should be between 0 and 1) or
+#'   nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
+#'   of cost values to check
 #' @param method selects method to evaluete error. "estimator" and "cross"
-#' @param k_fold number of fold to use with cross-validation
-#'
+#' @param nfolds number of fold to use with cross-validation. Default is 10.
+#' @inheritParams abcrlda
 #' @return List of best founded parameters
 #' @export
+#' @family functions in the package
 #'
 #' @example inst/examples/example_grid.R
 
-grid_search <- function(x, grouping, range_gamma, range_cost,
-                        method="estimator", k_fold=10){
+grid_search <- function(x, y, range_gamma, range_cost,
+                        method="estimator", nfolds=10){
 
   list_gamma <- numeric()
   list_cost <- numeric()
@@ -27,10 +31,10 @@ grid_search <- function(x, grouping, range_gamma, range_cost,
     for (gamma in range_gamma){
       for (i in 1:nrow(range_cost)){
         cost <- range_cost[i, ]
-        abcrlda_model <- abcrlda(x, grouping, gamma, cost)
+        abcrlda_model <- abcrlda(x, y, gamma, cost)
         list_gamma <- c(list_gamma, gamma)
         list_cost <- c(list_cost, cost)
-        list_estimates <- c(list_estimates, risk_estimate_20(abcrlda_model))
+        list_estimates <- c(list_estimates, da_risk_estimator(abcrlda_model))
       }
     }
   }else if (method == "cross"){
@@ -40,64 +44,61 @@ grid_search <- function(x, grouping, range_gamma, range_cost,
         list_gamma <- c(list_gamma, gamma)
         list_cost <- c(list_cost, cost)
         list_estimates <- c(list_estimates,
-                            cross_validation(x, grouping, gamma, cost, k_fold))
+                            cross_validation(x, y, gamma, cost, nfolds))
       }
     }
   }
   best_param_index <- which(list_estimates == min(list_estimates))
   return(structure(list(gamma = list_gamma[best_param_index],
                         cost = list_cost[best_param_index],
-                        e = list_estimates[best_param_index]
-  )))
+                        e = list_estimates[best_param_index])))
 }
 
 #' Cross Validation
 #' @inheritParams grid_search
-#' @param gamma regularization parameter
-#' @param cost parameter that controls prioretization of classes.
-#' It's value should be between 0 and 1 (0 < cost_10 < 1)
-#' Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
-#' @param kfolds Number of for cross validation algorithm
+#' @inheritParams abcrlda
+# @param gamma regularization parameter
+# @param cost parameter that controls prioretization of classes.
+# It's value should be between 0 and 1 (0 < cost_10 < 1)
+# Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
+# @param nfolds Number of for cross validation algorithm
 #' @return Returns average error of cross validation
 #' @export
-#' @family abcrlda binary classifier
+#' @family functions in the package
 #'
 #' @example inst/examples/example_cross.R
-cross_validation <- function(x, grouping, gamma=1, cost=c(0.5, 0.5), kfolds=10){
+cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
 
   shufled_index <- sample(nrow(x))
   x <- x[shufled_index, ]
-  grouping <- grouping[shufled_index]
-  folds <- cut(seq(1, nrow(x)), breaks = kfolds, labels = FALSE)
+  y <- y[shufled_index]
+  folds <- cut(seq(1, nrow(x)), breaks = nfolds, labels = FALSE)
   e_cross <- numeric()
 
-  if (!is.factor(grouping))
-    grouping <- as.factor(grouping)
-  lev <- levels(grouping)
-  k <- nlevels(grouping)
+  if (!is.factor(y))
+    y <- as.factor(y)
+  lev <- levels(y)
+  k <- nlevels(y)
 
   if (k != 2)
     stop("number of groups != 2, this is binary classifier")
 
   if (length(cost) == 1){
     if (cost >= 1 | cost <= 0)
-      stop("While providing single valued vector cost should be between 0 and 1 (not including)")
+      stop("While providing single valued vector
+           cost should be between 0 and 1 (not including)")
     cost <- c(cost, 1 - cost)
   }
   if (length(cost) != 2)
     stop("cost vector should be of length 1 or 2, this is binary classifier")
 
-  # print(cost)
-  # print(paste("____________", gamma, C_10))
-  for (i in 1:kfolds){
+  for (i in 1:nfolds){
     # Segement your data by fold using the which() function
     test_indexes <- which(folds == i, arr.ind = TRUE)
-    # print(test_indexes)
     test_data <- x[test_indexes, ]
-    test_label <- grouping[test_indexes]
+    test_label <- y[test_indexes]
     train_data <- x[-test_indexes, ]
-    train_label <- grouping[-test_indexes]
-    # print(test_label)
+    train_label <- y[-test_indexes]
 
     abcrlda_model <- abcrlda(train_data, train_label, gamma, cost)
     # print(test_label)
@@ -105,8 +106,8 @@ cross_validation <- function(x, grouping, gamma=1, cost=c(0.5, 0.5), kfolds=10){
     test1 <- test_data[test_label == lev[2], ]
     # print(test0)
     # print(test1)
-    res0 <- stats::predict(abcrlda_model, test0, type="raw") - 1
-    res1 <- stats::predict(abcrlda_model, test1, type="raw") - 1
+    res0 <- stats::predict(abcrlda_model, test0, type = "raw") - 1
+    res1 <- stats::predict(abcrlda_model, test1, type = "raw") - 1
     # print(res0)
     # print(res1)
     nerr0 <- sum(res0)
@@ -123,15 +124,17 @@ cross_validation <- function(x, grouping, gamma=1, cost=c(0.5, 0.5), kfolds=10){
 }
 
 
-
-#' Risk Estimator
+# da_risk_estimator double asymptotic
+#' Double Asymptotic Risk Estimator
 #' @description Calculates weighted error based on normalized cost values
 #' @inheritParams predict.abcrlda
 #'
 #' @return Weighted error based on "abcrlda" object
 #' @export
+#' @family functions in the package
 #' @example inst/examples/example_risk.R
-risk_estimate_20 <- function(object){
+#' @inheritSection abcrlda Reference
+da_risk_estimator <- function(object){
   ## check requirements
   if (class(object) != "abcrlda")
     stop("object has to be of type abcrlda")

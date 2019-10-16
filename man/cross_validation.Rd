@@ -8,9 +8,7 @@ cross_validation(x, grouping, gamma = 1, cost = c(0.5, 0.5),
   kfolds = 10)
 }
 \arguments{
-\item{x}{Matrix or data.frame of observations.}
-
-\item{grouping}{Grouping variable. A vector of numeric values 0 and 1 is recommended. Length has to correspond to nrow(x).}
+\item{x}{Input matrix or data.frame , of dimension nobs x nvars; each row is an observation vector.}
 
 \item{gamma}{regularization parameter}
 
@@ -36,7 +34,8 @@ model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 risk_estimate_20(model)
 }
 \seealso{
-Other abcrlda binary classifier: \code{\link{abcrlda}},
-  \code{\link{predict.abcrlda}}
+Other Other functions in the package: \code{\link{abcrlda}},
+  \code{\link{da_risk_estimator}},
+  \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
 }
-\concept{abcrlda binary classifier}
+\concept{Other functions in the package}

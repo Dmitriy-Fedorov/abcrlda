@@ -5,29 +5,51 @@
 \title{Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 for Cost-Sensitive Binary Classification}
 \usage{
-abcrlda(x, grouping, gamma = 1, cost = c(0.5, 0.5))
+abcrlda(x, y, gamma = 1, cost = c(0.5, 0.5))
 }
 \arguments{
-\item{x}{Matrix or data.frame of observations.}
+\item{x}{Input matrix or data.frame of dimension nobs x nvars; each row is an observation vector.}
 
-\item{grouping}{Grouping variable. A vector of numeric values 0 and 1 is recommended.
-Length has to correspond to nrow(x).}
+\item{y}{Class labels. Should be a factor with two levels, or a vector with two distinct values.
+If y is presented as a vector, it will be coerced into a factor.
+Length of y has to correspond to number of samples in x.}
 
-\item{gamma}{Regularization parameter.}
+\item{gamma}{Regularization parameter in the following equation
+\deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
+\bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
+- log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}}
 
-\item{cost}{Parameter that controls priorety of class 0.}
+\item{cost}{parameter that controls prioretization of classes.
+ This is a vector of length 1 or 2 where first value is \eqn{C_{10}}{C_10} (represents prioretization of class 0)
+ and second value if provided is \eqn{C_{01}}{C_01} (represents prioretization of class 1).
+ Default value is c(0.5, 0.5), so both classes have equal priority and
+ risk essentially becomes equivalent to error rate.
+
+ If single value is provided it should be normalized to be between 0 and 1 (but not including 0 or 1).
+ This value will be assigned to \eqn{C_{10}}{C_10} and
+ \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
+ In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.}
 }
 \value{
 An object of class "rrlda" is returned which can be used for class prediction (see predict())
-  \item{a}{Slope of a discriminant hyperplane. W(x) = a'x + m.}
-  \item{m}{Bias term. W(x) = a'x + m.}
-  \item{cost}{Normilized cost such that cost_10 + cost_01 == 1.}
-  \item{gamma}{Regularization parameter.}
-  \item{lev}{Levels. Corresponds to the groups.}
+  \item{a}{Slope of a discriminant hyperplane. W(\strong{x}) = \strong{a}' \strong{x} + m.}
+  \item{m}{Bias term.  W(\strong{x}) = \strong{a}'\strong{x} + m.}
+  \item{cost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} == 1.}
+  \item{gamma}{Regularization parameter value provided during fitting.}
+  \item{lev}{Levels. Corresponds to the labels in y.}
 }
 \description{
 Performs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 }
+\section{Reference}{
+
+  A. Zollanvari, M. Abdirash, A. Dadlani and B. Abibullaev,
+  "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
+  Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
+  Sept. 2019. doi: 10.1109/LSP.2019.2918485
+  URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+}
+
 \examples{
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
@@ -38,7 +60,8 @@ model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 predict(model, train_data)
 }
 \seealso{
-Other abcrlda binary classifier: \code{\link{cross_validation}},
-  \code{\link{predict.abcrlda}}
+Other functions in the package: \code{\link{cross_validation}},
+  \code{\link{da_risk_estimator}},
+  \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
 }
-\concept{abcrlda binary classifier}
+\concept{functions in the package}
