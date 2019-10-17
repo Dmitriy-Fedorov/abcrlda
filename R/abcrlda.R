@@ -119,9 +119,9 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5)){
 #' @description Computes class predictions for new data based on a given abcrlda object
 #' @param object An object of class "abcrlda".
 #' @param newx Matrix of new values for x at which predictions are to be made.
-#' @param out_type Determines a type of output. Two type of input could be provided.
-#'   If "class" value is provided this will return factor with levels corresponding to lev stored in object.
-#'   If "raw" value is provided this will return numeric vector with values obtained from discriminant function.
+# @param out_type Determines a type of output. Two type of input could be provided.
+#   If "class" value is provided this will return factor with levels corresponding to lev stored in object.
+#   If "raw" value is provided this will return numeric vector with values obtained from discriminant function.
 #' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
@@ -131,7 +131,7 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5)){
 #'
 #' @example inst/examples/example_abcrlda.R
 #' @inheritSection abcrlda Reference
-predict.abcrlda <- function(object, newx, out_type = "class", ...){
+predict.abcrlda <- function(object, newx, ...){
   ## check requirements
   if (class(object) != "abcrlda")
     stop("object has to be of type abcrlda")
@@ -140,11 +140,9 @@ predict.abcrlda <- function(object, newx, out_type = "class", ...){
       !is.data.frame(newx) && !is.data.frame(newx))
     stop("'x' has to be a vector, matrix or data.frame")
 
-  newx <- as.matrix(newx)
+  newx <- as.matrix(newx, drop = FALSE)
   pred <- as.numeric(newx %*% object$a + object$m <= 0) + 1
   cl <- object$lev[pred]
-  if (out_type == "raw")
-    return(pred)
-  else if (out_type == "class")
-    return(as.factor(cl))
+  return(as.factor(cl))
 }
+

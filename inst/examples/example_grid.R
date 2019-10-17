@@ -11,5 +11,16 @@ gs <- grid_search(train_data, train_label,
                   range_cost = cost_range,
                   method = "estimator")
 model <- abcrlda(train_data, train_label,
-                 gamma = gs$gamma[1], cost = gs$cost[1])
+                 gamma = gs$gamma, cost = gs$cost)
+predict(model, train_data)
+
+cost_range <- matrix(1:10, ncol = 2)
+gamma_range <- c(0.1, 1, 10, 100, 1000)
+
+gs <- grid_search(train_data, train_label,
+                  range_gamma = gamma_range,
+                  range_cost = cost_range,
+                  method = "cross")
+model <- abcrlda(train_data, train_label,
+                 gamma = gs$gamma, cost = gs$cost)
 predict(model, train_data)
