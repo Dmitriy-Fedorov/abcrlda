@@ -23,7 +23,7 @@ grid_search <- function(x, y, range_gamma, range_cost,
 
   list_gamma <- numeric()
   list_cost <- numeric()
-  list_estimates <- numeric()
+  risk_estimates <- numeric()
 
   range_cost <- as.matrix(range_cost)
 
@@ -34,7 +34,7 @@ grid_search <- function(x, y, range_gamma, range_cost,
         abcrlda_model <- abcrlda(x, y, gamma, cost)
         list_gamma <- c(list_gamma, gamma)
         list_cost <- rbind(list_cost, cost)
-        list_estimates <- c(list_estimates, da_risk_estimator(abcrlda_model))
+        risk_estimates <- c(risk_estimates, da_risk_estimator(abcrlda_model))
       }
     }
   }else if (method == "cross"){
@@ -43,18 +43,18 @@ grid_search <- function(x, y, range_gamma, range_cost,
         cost <- range_cost[i, ]
         list_gamma <- c(list_gamma, gamma)
         list_cost <- rbind(list_cost, cost)
-        list_estimates <- c(list_estimates,
-                            cross_validation(x, y, gamma, cost, nfolds))
+        risk_estimates <- c(risk_estimates,
+                            cross_validation(x, y, gamma, cost, nfolds)$ecr)
       }
     }
   }
-  best_param_index <- list_estimates == min(list_estimates)
+  best_param_index <- risk_estimates == min(risk_estimates)
   return(structure(list(gamma = list_gamma[best_param_index],
                         cost = list_cost[best_param_index, ],
-                        e = list_estimates[best_param_index])))
+                        risk = risk_estimates[best_param_index])))
 }
 
-#' Cross Validation
+#' Cross Validation for separate sampling adjasted for cost
 #' @description
 #' @inheritParams grid_search
 #' @inheritParams abcrlda
@@ -75,96 +75,52 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
   x <- x[shufled_index, ]
   y <- y[shufled_index]
 
-  folds <- cut(seq(1, nrow(x)), breaks = nfolds, labels = FALSE)
-  e_cross <- numeric()
-  e_e0 <- numeric()
-  e_e1 <- numeric()
-
   if (!is.factor(y))
     y <- as.factor(y)
   lev <- levels(y)
   k <- nlevels(y)
 
-  if (k != 2)
-    stop("number of groups != 2, this is binary classifier")
+  x0 <- x[y == lev[1], , drop = FALSE]
+  x1 <- x[y == lev[2], , drop = FALSE]
+  y0 <- y[y == lev[1]]
+  y1 <- y[y == lev[2]]
 
-  if (length(cost) == 1){
-    if (cost >= 1 | cost <= 0)
-      stop("While providing single valued vector
-           cost should be between 0 and 1 (not including)")
-    cost <- c(cost, 1 - cost)
-  }
+  fold0 <- cut(seq(1, nrow(x0)), breaks = nfolds, labels = FALSE)
+  fold1 <- cut(seq(1, nrow(x1)), breaks = nfolds, labels = FALSE)
 
-  if (length(cost) != 2)
-    stop("cost vector should be of length 1 or 2, this is binary classifier")
-
-  if (nfolds < 3)
-    stop("nfolds must be bigger than 3; nfolds=10 recommended")
-
-  if (nfolds > nrow(x))
-    stop("number of folds is greater than number of samples")
+  e0 <- numeric()
+  e1 <- numeric()
 
   for (i in 1:nfolds){
-    # Segement your data by fold using the which() function
-    test_indexes <- which(folds == i, arr.ind = TRUE)
-    test_data <- x[test_indexes, , drop = FALSE]
-    test_label <- y[test_indexes]
-    train_data <- x[-test_indexes, , drop = FALSE]
-    train_label <- y[-test_indexes]
+    for (j in 1:nfolds){
+      test_index0 <- which(fold0 == i, arr.ind = TRUE)
+      test_index1 <- which(fold1 == j, arr.ind = TRUE)
 
-    abcrlda_model <- abcrlda(train_data, train_label, gamma, cost)
-    # print(abcrlda_model$a)
-    # print(abcrlda_model$m)
-    # print(dim(train_data))
-    # print(dim(test_data))
-    test0 <- test_data[test_label == lev[1], , drop = FALSE]
-    test1 <- test_data[test_label == lev[2], , drop = FALSE]
-    # print(paste("0", nrow(test0), test0))
-    # print(paste("1", nrow(test1), test1))
-    # print("______")
+      test_data0 <- x0[test_index0, , drop = FALSE]
+      test_data1 <- x1[test_index1, , drop = FALSE]
+      test_label0 <- y[test_index0]
+      test_label1 <- y[test_index1]
 
-    if (nrow(test0) > 0){
-      # res0 <- as.numeric(stats::predict(abcrlda_model, test0)) - 1
-      res0 <- as.numeric(test0 %*% abcrlda_model$a + abcrlda_model$m <= 0)
-      nerr0 <- sum(res0)
-      # if(res0 == 1){
-      #   print(res0 == 0)
-      #   print(res0)
-      #   print("0 ______ ")
-      # }
-      err0 <- nerr0 / length(res0)
-      e_e0 <- c(e_e0, err0)
-    }else{
-      err0 <- 0
+      train_data <- rbind(x0[-test_index0, , drop = FALSE],
+                          x1[-test_index1, , drop = FALSE])
+      train_label <- factor(c(y0[-test_index0], y1[-test_index1]),
+                            levels=1:k, labels=lev)
+
+      model <- abcrlda(train_data, train_label, gamma, cost)
+
+      res0 <- as.numeric(test_data0 %*% model$a + model$m <= 0)
+      res1 <- as.numeric(test_data1 %*% model$a + model$m <= 0)
+
+      e0 <- c(e0, sum(res0) / length(res0))
+      e1 <- c(e1, sum(!res1) / length(res1))
+
     }
-    if (nrow(test1) > 0){
-      # res1 <- as.numeric(stats::predict(abcrlda_model, test1)) - 1
-      res1 <- as.numeric(test1 %*% abcrlda_model$a + abcrlda_model$m <= 0)
-      nerr1 <- sum(!res1)
-      err1 <- nerr1 / length(res1)
-      e_e1 <- c(e_e1, err1)
-    }else{
-      err1 <- 0
-    }
-
-    risk <- err0 * cost[1] + err1 * cost[2]
-    e_cross <- c(e_cross, risk)
-
-
-
   }
-  # print(e_cross)
-  return(list(e_cross = mean(e_cross),
-              ecr = mean(e_e0) * cost[1] + mean(e_e1) * cost[2],
-              e0 = mean(e_e0),
-              e1 = mean(e_e1)))
+
+  return(list(ecross = mean(e0) * cost[1] + mean(e1) * cost[2],
+              e0 = mean(e0),
+              e1 = mean(e1)))
 }
-
-
-# cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
-#
-#
-# }
 
 #' Double Asymptotic Risk Estimator
 #' @description Generalized consistent estimator of risk
