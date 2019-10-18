@@ -1,6 +1,12 @@
 
 #' Grid Search
-#' @description Performs grid search based on double asymptotic risk estimation or cross validation.
+#' @description Performs grid search for optimal hyperparameters (code{gamma} and code{cost})
+#'   within specified space based on double asymptotic risk estimation or cross validation.
+#'   Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation.
+#'   For further details refer to paper in the refernce section.
+#'   \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
+#'   \deqn{\varepsilon_i = \Phi(\frac{(-1)^{i+1} ( \hat{G}_i + \hat{\omega}_{opt}/\gamma   )}{\sqrt{\hat{D}}})}{e_i = CDF((-1)^(i+1) (Ghat_i + omega_opt/gamma) / sqrt(Dhat))}
+#'   Cross validation was adapted to work with cost based risk estimation and works optimally with separate sampling
 #'
 # @param x Matrix or data.frame of observations.
 # @param y Grouping variable. A vector of numeric values 0 and 1 is recommended.
@@ -9,13 +15,26 @@
 #' @param range_cost nobs x 1 vector (values should be between 0 and 1) or
 #'   nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
 #'   of cost values to check
-#' @param method selects method to evaluete error. "estimator" and "cross"
+#' @param method selects method to evaluete risk. "estimator" and "cross"
 #' @param nfolds number of fold to use with cross-validation. Default is 10.
 #' @inheritParams abcrlda
 #' @return List of best founded parameters
+#'   \item{cost}{cost value for which risk estimates are lowest during the search.}
+#'   \item{gamma}{gamma regularization parameter for which risk estimates are lowest during the search}
+#'   \item{risk}{Smalest risk value estimated during grid search.}
 #' @export
 #' @family functions in the package
+#' @section Reference:
+#'   A. Zollanvari, M. Abdirash, A. Dadlani and B. Abibullaev,
+#'   "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
+#'   Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
+#'   Sept. 2019. doi: 10.1109/LSP.2019.2918485
+#'   URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
 #'
+#'   Braga-Neto, Ulisses & Zollanvari, Amin & Dougherty, Edward. (2014).
+#'   Cross-Validation Under Separate Sampling: Strong Bias and How to Correct It.
+#'   Bioinformatics (Oxford, England). 30. 10.1093/bioinformatics/btu527.
+#'   URL: \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4296143/pdf/btu527.pdf}
 #' @example inst/examples/example_grid.R
 
 grid_search <- function(x, y, range_gamma, range_cost,
@@ -66,7 +85,11 @@ grid_search <- function(x, y, range_gamma, range_cost,
 #' @return Returns average risk after cross validation
 #' @export
 #' @family functions in the package
-#'
+#' @section Reference:
+#'   Braga-Neto, Ulisses & Zollanvari, Amin & Dougherty, Edward. (2014).
+#'   Cross-Validation Under Separate Sampling: Strong Bias and How to Correct It.
+#'   Bioinformatics (Oxford, England). 30. 10.1093/bioinformatics/btu527.
+#'   URL: \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4296143/pdf/btu527.pdf}
 #' @example inst/examples/example_cross.R
 cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
 
@@ -127,7 +150,7 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
 #' @inheritParams predict.abcrlda
 #'
 #' @return Calculates risk based on estimated class error rates and misclassification costs
-#'   \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e0 * cost_10 + e1 * cost_01)}
+#'   \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
 #' @export
 #' @family functions in the package
 #' @example inst/examples/example_risk.R

@@ -2,14 +2,16 @@
 #' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #' for Cost-Sensitive Binary Classification
 #' @description Performs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
-#' @param x Input matrix or data.frame of dimension nobs x nvars; each row is an observation vector.
-#' @param y Class labels. Should be a factor with two levels, or a vector with two distinct values.
-#'   If y is presented as a vector, it will be coerced into a factor.
-#'   Length of y has to correspond to number of samples in x.
-#' @param gamma Regularization parameter in the following equation
+#' @param x Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.
+#' @param y a numeric or factor vector of class labels. Factor should have two levels
+#'   or be a vector with two distinct values.
+#'   If \code{y} is presented as a vector, it will be coerced into a factor.
+#'   Length of \code{y} has to correspond to number of samples in \code{x}.
+#' @param gamma Regularization parameter \code{\eqn{\gamma}{gamma}} in the following equation
 #'   \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 #'   \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
 #'   - log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
+#'   Formulas and derivations for parameters used in above equation can be found in the journal paper under reference section.
 #' @param cost parameter that controls prioretization of classes.
 #'  This is a vector of length 1 or 2 where first value is \eqn{C_{10}}{C_10} (represents prioretization of class 0)
 #'  and second value if provided is \eqn{C_{01}}{C_01} (represents prioretization of class 1).
@@ -21,10 +23,11 @@
 #'  \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
 #'  In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.
 #'
-#' @return An object of class "rrlda" is returned which can be used for class prediction (see predict())
+#' @return An object of class "abcrlda" is returned which can be used for class prediction (see predict())
 #'   \item{a}{Slope of a discriminant hyperplane. W(\strong{x}) = \strong{a}' \strong{x} + m.}
 #'   \item{m}{Bias term.  W(\strong{x}) = \strong{a}'\strong{x} + m.}
-#'   \item{cost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} == 1.}
+#'   \item{cost}{Vector of cost values that were used to fit this model}
+#'   \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} == 1.}
 #'   \item{gamma}{Regularization parameter value provided during fitting.}
 #'   \item{lev}{Levels. Corresponds to the labels in y.}
 #' @section Reference:
@@ -125,7 +128,7 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5)){
 #' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
-#'  Returns prediction for each observation.
+#'  Returns factor vector with predictions for each observation. Factor levels are inhereted from the object variable.
 #' @export
 #' @family functions in the package
 #'
@@ -143,6 +146,7 @@ predict.abcrlda <- function(object, newx, ...){
   newx <- as.matrix(newx, drop = FALSE)
   pred <- as.numeric(newx %*% object$a + object$m <= 0) + 1
   cl <- object$lev[pred]
+  # cl <- factor(cl, levels=1:k, labels=object$lev)
   return(as.factor(cl))
 }
 
