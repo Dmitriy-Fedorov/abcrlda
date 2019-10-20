@@ -39,7 +39,7 @@
 #' @export
 #' @family functions in the package
 #' @example inst/examples/example_abcrlda.R
-abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5)){
+abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5), bias_correction=TRUE){
 
   ## check requirements
   if (is.null(dim(x)))
@@ -103,7 +103,10 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5)){
   Dhat <- D * (1 + gamma * deltahat) ^ 2
   omegaopt <- gamma * (Dhat * log( cost[2] / cost[1]) / (Ghat1 - Ghat0) -
               0.5 * (Ghat0 + Ghat1))
-  m_abcrlda <- as.numeric(m_rlda + omegaopt / gamma)
+  if (bias_correction)
+    m_abcrlda <- as.numeric(m_rlda + omegaopt / gamma)
+  else
+    m_abcrlda <- as.numeric(m_rlda)
   return(structure(list(a = a,
                         m = m_abcrlda,
                         cost = cost,
