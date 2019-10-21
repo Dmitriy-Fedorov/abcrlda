@@ -213,6 +213,12 @@ abcrlda::cross_validation(train_data, train_label, gamma = 1, cost=costtt, nfold
 
 # -------------------------------- CRAN ---------------------------------
 usethis::use_release_issue()
+usethis::use_cran_comments()
+devtools::check(remote = T)
+# devtools::check_win_devel()
+# rhub::check_for_cran()
+# rhub::check(platform = "ubuntu-rchk")
+# rhub::check_with_sanitizers()
 # -------------------------------- other --------------------------------
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |

@@ -7,7 +7,9 @@ Authors@R: c(
     person("Amin", "Zollanvari", email = "amin.zollanvari@nu.edu.kz", role = "aut"),
     person("Aresh", "Dadlani", email = "aresh.dadlani@nu.edu.kz ", role = "aut"))
 Maintainer: Dmitriy Fedorov <dmitriy.fedorov@nu.edu.kz>
-Description: This package offers methods to perform 
+Description: Extension to the classical RLDA that improves performance 
+    in cost-sensitive binary classification by bias correction. 
+    This package offers methods to perform 
     asymptotically bias-corrected regularized linear discriminant analysis 
     for cost-sensitive binary classification.
 Imports: stats

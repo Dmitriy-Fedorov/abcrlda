@@ -7,7 +7,7 @@
 #'   or be a vector with two distinct values.
 #'   If \code{y} is presented as a vector, it will be coerced into a factor.
 #'   Length of \code{y} has to correspond to number of samples in \code{x}.
-#' @param gamma Regularization parameter \code{\eqn{\gamma}{gamma}} in the following equation
+#' @param gamma Regularization parameter \eqn{\gamma}{gamma} in the following equation
 #'   \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 #'   \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
 #'   - log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
