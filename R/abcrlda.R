@@ -22,7 +22,11 @@
 #'  This value will be assigned to \eqn{C_{10}}{C_10} and
 #'  \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
 #'  In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.
-#'
+#' @param bias_correction Takes in boolean value.
+#'   If \code{bias_correction} is TRUE asymptotic bias correction will be performed.
+#'   Otherwise (\code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
+#'   ABCRLDA is redused to traditional RLDA.
+#'   Default is TRUE
 #' @return An object of class "abcrlda" is returned which can be used for class prediction (see predict())
 #'   \item{a}{Slope of a discriminant hyperplane. W(\strong{x}) = \strong{a}' \strong{x} + m.}
 #'   \item{m}{Bias term.  W(\strong{x}) = \strong{a}'\strong{x} + m.}

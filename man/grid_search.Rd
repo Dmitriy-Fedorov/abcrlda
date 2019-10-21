@@ -5,29 +5,55 @@
 \title{Grid Search}
 \usage{
 grid_search(x, y, range_gamma, range_cost, method = "estimator",
-  nfold = 10)
+  nfolds = 10)
 }
 \arguments{
-\item{x}{Input matrix or data.frame , of dimension nobs x nvars; each row is an observation vector.}
+\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
 
-\item{y}{Class labels. Should be a factor with two levels, or a vector with two distinct values.
-If y is presented as a vector, it will be coerced into a factor.
-Length of y has to correspond to number of samples in x.}
+\item{y}{a numeric or factor vector of class labels. Factor should have two levels
+or be a vector with two distinct values.
+If \code{y} is presented as a vector, it will be coerced into a factor.
+Length of \code{y} has to correspond to number of samples in \code{x}.}
 
 \item{range_gamma}{vector of gamma values to check}
 
-\item{range_cost}{[1 x n] vector or [2 x n] matrix of cost values to check}
+\item{range_cost}{nobs x 1 vector (values should be between 0 and 1) or
+nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
+of cost values to check}
 
-\item{method}{selects method to evaluete error. "estimator" and "cross"}
+\item{method}{selects method to evaluete risk. "estimator" and "cross"}
 
-\item{nfold}{number of fold to use with cross-validation}
+\item{nfolds}{number of fold to use with cross-validation. Default is 10.}
 }
 \value{
 List of best founded parameters
+  \item{cost}{cost value for which risk estimates are lowest during the search.}
+  \item{gamma}{gamma regularization parameter for which risk estimates are lowest during the search}
+  \item{risk}{Smalest risk value estimated during grid search.}
 }
 \description{
-Performs grid search based on cross validation or error estimation formula.
+Performs grid search for optimal hyperparameters (code{gamma} and code{cost})
+  within specified space based on double asymptotic risk estimation or cross validation.
+  Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation.
+  For further details refer to paper in the refernce section.
+  \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
+  \deqn{\varepsilon_i = \Phi(\frac{(-1)^{i+1} ( \hat{G}_i + \hat{\omega}_{opt}/\gamma   )}{\sqrt{\hat{D}}})}{e_i = CDF((-1)^(i+1) (Ghat_i + omega_opt/gamma) / sqrt(Dhat))}
+  Cross validation was adapted to work with cost based risk estimation and works optimally with separate sampling
 }
+\section{Reference}{
+
+  A. Zollanvari, M. Abdirash, A. Dadlani and B. Abibullaev,
+  "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
+  Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
+  Sept. 2019. doi: 10.1109/LSP.2019.2918485
+  URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+
+  Braga-Neto, Ulisses & Zollanvari, Amin & Dougherty, Edward. (2014).
+  Cross-Validation Under Separate Sampling: Strong Bias and How to Correct It.
+  Bioinformatics (Oxford, England). 30. 10.1093/bioinformatics/btu527.
+  URL: \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4296143/pdf/btu527.pdf}
+}
+
 \examples{
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
@@ -42,13 +68,24 @@ gs <- grid_search(train_data, train_label,
                   range_cost = cost_range,
                   method = "estimator")
 model <- abcrlda(train_data, train_label,
-                 gamma = gs$gamma[1], cost = gs$cost[1])
+                 gamma = gs$gamma, cost = gs$cost)
+predict(model, train_data)
+
+cost_range <- matrix(1:10, ncol = 2)
+gamma_range <- c(0.1, 1, 10, 100, 1000)
+
+gs <- grid_search(train_data, train_label,
+                  range_gamma = gamma_range,
+                  range_cost = cost_range,
+                  method = "cross")
+model <- abcrlda(train_data, train_label,
+                 gamma = gs$gamma, cost = gs$cost)
 predict(model, train_data)
 }
 \seealso{
-Other Other functions in the package: \code{\link{abcrlda}},
+Other functions in the package: \code{\link{abcrlda}},
   \code{\link{cross_validation}},
   \code{\link{da_risk_estimator}},
   \code{\link{predict.abcrlda}}
 }
-\concept{Other functions in the package}
+\concept{functions in the package}

@@ -4,7 +4,7 @@
 \alias{predict.abcrlda}
 \title{Class Prediction for abcrlda objects}
 \usage{
-\method{predict}{abcrlda}(object, newx, out_type = "class", ...)
+\method{predict}{abcrlda}(object, newx, ...)
 }
 \arguments{
 \item{object}{An object of class "abcrlda".}
@@ -12,14 +12,9 @@
 \item{newx}{Matrix of new values for x at which predictions are to be made.}
 
 \item{...}{Argument used by generic function predict(object, x, ...).}
-
-\item{type}{Determines a type of output. Two type of input could be provided.
-If "class" value is provided this will return factor with levels corresponding to lev stored in object.
-If "raw" value is provided this will return numeric vector with values obtained from discriminant function.}
 }
 \value{
-class Class prediction for each observation.
- raw Raw values.
+Returns factor vector with predictions for each observation. Factor levels are inhereted from the object variable.
 }
 \description{
 Computes class predictions for new data based on a given abcrlda object
@@ -36,16 +31,25 @@ Computes class predictions for new data based on a given abcrlda object
 \examples{
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
-                        iris[, ncol(iris)] == "versicolor"), 1:4]
+                           iris[, ncol(iris)] == "versicolor"), 1:4]
 train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
-                                iris[, ncol(iris)] == "versicolor"), 5])
+                                   iris[, ncol(iris)] == "versicolor"), 5])
 model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
-predict(model, train_data)
+a <- predict(model, train_data)
+# same params but more explicit
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(0.75, 0.25))
+b <- predict(model, train_data)
+# same class costs ratio
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(3, 1))
+c <- predict(model, train_data)
+# all this model will give the same predictions
+all(a == b & a == c & b == c)
+#' [1] TRUE
 }
 \seealso{
-Other Other functions in the package: \code{\link{abcrlda}},
+Other functions in the package: \code{\link{abcrlda}},
   \code{\link{cross_validation}},
   \code{\link{da_risk_estimator}},
   \code{\link{grid_search}}
 }
-\concept{Other functions in the package}
+\concept{functions in the package}

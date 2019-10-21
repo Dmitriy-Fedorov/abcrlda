@@ -10,7 +10,7 @@ library(corpcor)
 # p0 = c(0, 0, 0.5)  # mean x, mean y, standart deviation
 # p1 = c(1, 1, 0.5)
 # Sys.which("pdflatex")
-# devtools::build_manual()
+# devtools::build_manual(path = "inst")
 # lintr::lint_package()
 
 # glmnet
@@ -35,16 +35,16 @@ generate_train_test <- function(N=100, N_test=10000,
 err <- function(model, test, grouping){
   test0 <- test[grouping == model$lev[1],]
   test1 <- test[grouping == model$lev[2],]
-  res0 = predict(model, test0, type="raw") - 1
-  res1 = predict(model, test1, type="raw") - 1
+  res0 = as.numeric(predict(model, test0)) - 1
+  res1 = as.numeric(predict(model, test1)) - 1
   nerr0 = sum(res0)
   nerr1 = sum(!res1)
   err0 = nerr0 / length(res0)
   err1 = nerr1 / length(res1)
-  return(t(data.frame(err0 = err0, err1 = err1,
-              errTotal = (nerr0 + nerr1) / length(grouping),
-              errCost = err0*model$ncost[1] + err1*model$ncost[2],
-              risk = err0*model$cost[1] + err1*model$cost[2])))
+  return(t(data.frame(actual_err0 = err0, actual_err1 = err1,
+                      actual_errTotal = (nerr0 + nerr1) / length(grouping),
+                      actual_normrisk = err0*model$ncost[1] + err1*model$ncost[2],
+                      actual_risk = err0*model$cost[1] + err1*model$cost[2])))
 }
 
 plott <- function(model, x, grouping, start = -2, finish = 2){
@@ -62,18 +62,23 @@ plott <- function(model, x, grouping, start = -2, finish = 2){
 
 
 # -------------------------------- 2D test manual --------------------------------
-gen <- generate_train_test(N=1000, m0=c(0, 0), m1=c(0, 1))
-model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost = c(1,3))
+gen <- generate_train_test(N=1000, m0=c(0, 0), m1=c(0, 2))
+costtt <- c(0.7, 0.3)
+model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost = costtt, bias_correction = 1)
 e = err(model, gen$test, gen$test_label)
 rbind(e,
   t(data.frame(
-    restimate = abcrlda::da_risk_estimator(model),
-    cross = abcrlda::cross_validation(gen$train, gen$train_label, cost=c(1,3)))
+    estimated_risk = abcrlda::da_risk_estimator(model),
+    cross = abcrlda::cross_validation(gen$train, gen$train_label, gamma = 1, cost=costtt, nfold=10))
   ))
 
-# confusionMatrix(reference = as.factor(gen$test_label),
-#                 data = (predict(model, gen$test, type="class")))
-# asd = predict(model, gen$test, type="raw")
+abcrlda::cross_validation(gen$train, gen$train_label, gamma = 1, cost=costtt, nfold=10)
+
+
+confusionMatrix(reference = as.factor(gen$test_label),
+                data = (predict(model, gen$test)))
+asd = predict(model, gen$test)
+asd
 # asd2 = predict(model, gen$test, type="class")
 # all(asd == as.numeric(asd2))
 # class(predict(model, gen$test, type="class"))
@@ -94,8 +99,8 @@ gs_c <- grid_search(gen$train, gen$train_label,
                    method = "cross")
 
 
-model_est = abcrlda(gen$train, gen$train_label, gamma = gs_e$gamma[1], cost = gs_e$cost[1])
-model_crs = abcrlda(gen$train, gen$train_label, gamma = gs_c$gamma[1], cost = gs_c$cost[1])
+model_est = abcrlda(gen$train, gen$train_label, gamma = gs_e$gamma, cost = gs_e$cost)
+model_crs = abcrlda(gen$train, gen$train_label, gamma = gs_c$gamma, cost = gs_c$cost)
 
 er_e = err(model_est, gen$test, gen$test_label)
 er_c = err(model_crs, gen$test, gen$test_label)
@@ -141,8 +146,8 @@ gs_c <- grid_search(gen$train, gen$train_label,
                     method = "cross")
 
 
-model_est = abcrlda(gen$train, gen$train_label, gamma = gs_e$gamma[1], cost = gs_e$cost[1])
-model_crs = abcrlda(gen$train, gen$train_label, gamma = gs_c$gamma[1], cost = gs_c$cost[1])
+model_est = abcrlda(gen$train, gen$train_label, gamma = gs_e$gamma, cost = gs_e$cost)
+model_crs = abcrlda(gen$train, gen$train_label, gamma = gs_c$gamma, cost = gs_c$cost)
 
 er_e = err(model_est, gen$test, gen$test_label)
 er_c = err(model_crs, gen$test, gen$test_label)
@@ -166,18 +171,113 @@ traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
                           iris[,ncol(iris)]=="versicolor"), 1:4]
 trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
                                   iris[,ncol(iris)]=="versicolor"), 5])
+bias = 1
 
-rr <- abcrlda(traindata, trainlabel, gamma = 0.5, cost = 0.75)
-stats::predict(rr, traindata, type="raw")
+rr <- abcrlda(traindata, trainlabel, gamma=1, cost = 0.75, bias_correction = bias)
+# stats::predict(rr, traindata)
 e = err(rr, traindata, trainlabel)
 
 rbind(e,
       t(data.frame(
+        bias_correction = bias,
         restimate = abcrlda::da_risk_estimator(rr),
         cross = abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75,0.25)))
       ))
-abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75, 0.25),kfolds = 3)
+# abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75, 0.25), nfolds = 3)
 # asd = predict(rr, traindata, type="raw")
 # asd2 = predict(rr, traindata, type="class")
 # all(asd == as.numeric(asd2))
 
+# -------------------------------- s5 dataset --------------------------------
+train = read.csv(file="A:/Dropbox/9th/R/Code/s5/SigPar_Train.csv", header=FALSE, sep=",")
+test = read.csv(file="A:/Dropbox/9th/R/Code/s5/SigPar_Test.csv", header=FALSE, sep=",")
+
+train_data <- train[, 1:ncol(train) - 1]
+train_label <- train[, ncol(train)]
+test_data <- test[, 1:ncol(train) - 1]
+test_label <- test[, ncol(train)]
+
+costtt <- c(0.7, 0.3)
+bias = FALSE
+model <- abcrlda::abcrlda(train_data, train_label, gamma = 1, cost = costtt, bias_correction = bias)
+e = err(model, test_data, test_label)
+rbind(e,
+      t(data.frame(
+        bias_correction = bias,
+        estimated_risk = abcrlda::da_risk_estimator(model),
+        cross = abcrlda::cross_validation(train_data, train_label, gamma = 1, cost=costtt, nfold=10))
+      ))
+
+abcrlda::cross_validation(train_data, train_label, gamma = 1, cost=costtt, nfold=10)
+
+
+# -------------------------------- CRAN ---------------------------------
+usethis::use_release_issue()
+# -------------------------------- other --------------------------------
+data(iris)
+train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
+                           iris[, ncol(iris)] == "versicolor"), 1:4]
+train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
+                                   iris[, ncol(iris)] == "versicolor"), 5])
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
+a <- predict(model, train_data)
+# same params but more explicit
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(0.75, 0.25))
+b <- predict(model, train_data)
+# same class costs ratio
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(3, 1))
+c <- predict(model, train_data)
+
+
+cost_range <- matrix(1:10, ncol = 2)
+gamma_range <- c(0.1, 1, 10, 100, 1000)
+
+gs <- grid_search(train_data, train_label,
+                  range_gamma = gamma_range,
+                  range_cost = cost_range,
+                  method = "cross")
+model <- abcrlda(train_data, train_label,
+                 gamma = gs$gamma, cost = gs$cost)
+predict(model, train_data)
+
+
+data(iris)
+x <- iris[which(iris[, ncol(iris)] == "virginica" |
+                           iris[, ncol(iris)] == "versicolor"), 1:4]
+y <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
+                                   iris[, ncol(iris)] == "versicolor"), 5])
+
+cross_validation(x, y, gamma = 5, nfolds = 100)
+
+model <- abcrlda(x, y, gamma = 5)
+da_risk_estimator(model)
+model$a
+
+
+folds = cut(seq(1, nrow(x)), breaks = 100, labels = FALSE)
+
+
+test_indexes <- which(folds == 50, arr.ind = TRUE)
+test_indexes
+x <- as.matrix(x)
+x
+test_data <- x[test_indexes, , drop = FALSE]
+test_data
+dim(test_data)
+typeof(test_data)
+predict(model, test_data)
+
+
+test_label <- y[test_indexes]
+train_data <- x[-test_indexes, ]
+train_label <- y[-test_indexes]
+
+abcrlda_model <- abcrlda(train_data, train_label)
+
+
+a = c(1,0,0,0,1,1,0)
+b <- as.factor(a)
+b[b == 0]
+b[b == levels(b)[2]]
+ad = c(b[b == levels(b)[1]], b[b == levels(b)[2]])
+factor(ad, levels=1:nlevels(b), labels=levels(b))

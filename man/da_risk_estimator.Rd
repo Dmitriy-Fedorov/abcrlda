@@ -10,10 +10,11 @@ da_risk_estimator(object)
 \item{object}{An object of class "abcrlda".}
 }
 \value{
-Weighted error based on "abcrlda" object
+Calculates risk based on estimated class error rates and misclassification costs
+  \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
 }
 \description{
-Calculates weighted error based on normalized cost values
+Generalized consistent estimator of risk
 }
 \section{Reference}{
 
@@ -31,11 +32,11 @@ train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
 train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
                                  iris[, ncol(iris)] == "versicolor"), 5])
 model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
-risk_estimate_20(model)
+da_risk_estimator(model)
 }
 \seealso{
-Other Other functions in the package: \code{\link{abcrlda}},
+Other functions in the package: \code{\link{abcrlda}},
   \code{\link{cross_validation}},
   \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
 }
-\concept{Other functions in the package}
+\concept{functions in the package}
