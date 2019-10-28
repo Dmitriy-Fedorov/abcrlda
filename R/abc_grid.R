@@ -11,12 +11,14 @@
 # @param x Matrix or data.frame of observations.
 # @param y Grouping variable. A vector of numeric values 0 and 1 is recommended.
 # Length has to correspond to nrow(x).
-#' @param range_gamma vector of gamma values to check
+#' @param range_gamma vector of \code{gamma} values to check
 #' @param range_cost nobs x 1 vector (values should be between 0 and 1) or
 #'   nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
 #'   of cost values to check
 #' @param method selects method to evaluete risk. "estimator" and "cross"
 #' @param nfolds number of fold to use with cross-validation. Default is 10.
+#'  In case of inbalanced data \code{nfolds} should not be greater than number of observations in
+#'  smaller class.
 #' @inheritParams abcrlda
 #' @return List of best founded parameters
 #'   \item{cost}{cost value for which risk estimates are lowest during the search.}
@@ -103,10 +105,32 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
   lev <- levels(y)
   k <- nlevels(y)
 
+  if (k != 2)
+    stop("number of groups != 2, this is binary classifier")
+
+  if (length(cost) == 1){
+    if (cost >= 1 | cost <= 0)
+      stop("While providing single valued vector
+           cost should be between 0 and 1 (not including)")
+    cost <- c(cost, 1 - cost)
+  }
+
+  if (length(cost) != 2)
+    stop("cost vector should be of length 1 or 2, this is binary classifier")
+
+
+
   x0 <- x[y == lev[1], , drop = FALSE]
   x1 <- x[y == lev[2], , drop = FALSE]
   y0 <- y[y == lev[1]]
   y1 <- y[y == lev[2]]
+
+
+  if (nfolds < 3)
+    stop("nfolds must be bigger than 3; nfolds=10 recommended")
+
+  if (nfolds > min(c(nrow(x0), nrow(x1))))
+    stop("number of folds is greater than number of observations in a smaller class")
 
   fold0 <- cut(seq(1, nrow(x0)), breaks = nfolds, labels = FALSE)
   fold1 <- cut(seq(1, nrow(x1)), breaks = nfolds, labels = FALSE)
