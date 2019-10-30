@@ -37,6 +37,7 @@ da_risk_estimator(model)
 \seealso{
 Other functions in the package: \code{\link{abcrlda}},
   \code{\link{cross_validation}},
-  \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
+  \code{\link{grid_search}}, \code{\link{predict.abcrlda}},
+  \code{\link{risk_calculate}}
 }
 \concept{functions in the package}

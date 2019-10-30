@@ -9,12 +9,12 @@ cross_validation(x, y, gamma = 1, cost = c(0.5, 0.5), nfolds = 10)
 \arguments{
 \item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
 
-\item{y}{a numeric or factor vector of class labels. Factor should have two levels
+\item{y}{a numeric vector or factor of class labels. Factor should have two levels
 or be a vector with two distinct values.
 If \code{y} is presented as a vector, it will be coerced into a factor.
 Length of \code{y} has to correspond to number of samples in \code{x}.}
 
-\item{gamma}{Regularization parameter \code{\eqn{\gamma}{gamma}} in the following equation
+\item{gamma}{Regularization parameter \eqn{\gamma}{gamma} in the following equation
 \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
 - log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
@@ -31,10 +31,15 @@ Formulas and derivations for parameters used in above equation can be found in t
  \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
  In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.}
 
-\item{nfolds}{number of fold to use with cross-validation. Default is 10.}
+\item{nfolds}{number of fold to use with cross-validation. Default is 10.
+In case of inbalanced data \code{nfolds} should not be greater than number of observations in
+smaller class.}
 }
 \value{
-Returns average risk after cross validation
+Returns list of parameters
+  \item{risk_cross}{Returns risk estimation where \eqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}}
+  \item{e_0}{Error estimate for class 0}
+  \item{e_1}{Error estimate for class 1}
 }
 \description{
 Cross Validation for separate sampling adjasted for cost
@@ -58,6 +63,7 @@ cross_validation(train_data, train_label, gamma = 10)
 \seealso{
 Other functions in the package: \code{\link{abcrlda}},
   \code{\link{da_risk_estimator}},
-  \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
+  \code{\link{grid_search}}, \code{\link{predict.abcrlda}},
+  \code{\link{risk_calculate}}
 }
 \concept{functions in the package}

@@ -10,12 +10,12 @@ abcrlda(x, y, gamma = 1, cost = c(0.5, 0.5), bias_correction = TRUE)
 \arguments{
 \item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
 
-\item{y}{a numeric or factor vector of class labels. Factor should have two levels
+\item{y}{a numeric vector or factor of class labels. Factor should have two levels
 or be a vector with two distinct values.
 If \code{y} is presented as a vector, it will be coerced into a factor.
 Length of \code{y} has to correspond to number of samples in \code{x}.}
 
-\item{gamma}{Regularization parameter \code{\eqn{\gamma}{gamma}} in the following equation
+\item{gamma}{Regularization parameter \eqn{\gamma}{gamma} in the following equation
 \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
 - log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
@@ -80,6 +80,7 @@ all(a == b & a == c & b == c)
 \seealso{
 Other functions in the package: \code{\link{cross_validation}},
   \code{\link{da_risk_estimator}},
-  \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
+  \code{\link{grid_search}}, \code{\link{predict.abcrlda}},
+  \code{\link{risk_calculate}}
 }
 \concept{functions in the package}

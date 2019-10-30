@@ -12,6 +12,8 @@ library(corpcor)
 # Sys.which("pdflatex")
 # devtools::build_manual(path = "inst")
 # lintr::lint_package()
+# devtools::build_vignettes()
+# devtools::build()
 
 # glmnet
 
@@ -32,21 +34,6 @@ generate_train_test <- function(N=100, N_test=10000,
 }
 
 
-err <- function(model, test, grouping){
-  test0 <- test[grouping == model$lev[1],]
-  test1 <- test[grouping == model$lev[2],]
-  res0 = as.numeric(predict(model, test0)) - 1
-  res1 = as.numeric(predict(model, test1)) - 1
-  nerr0 = sum(res0)
-  nerr1 = sum(!res1)
-  err0 = nerr0 / length(res0)
-  err1 = nerr1 / length(res1)
-  return(t(data.frame(actual_err0 = err0, actual_err1 = err1,
-                      actual_errTotal = (nerr0 + nerr1) / length(grouping),
-                      actual_normrisk = err0*model$ncost[1] + err1*model$ncost[2],
-                      actual_risk = err0*model$cost[1] + err1*model$cost[2])))
-}
-
 plott <- function(model, x, grouping, start = -2, finish = 2){
   p1 <- -(start * model$a[1] / model$a[2]) - model$m / model$a[2]
   p2 <- -(finish * model$a[1] / model$a[2]) - model$m / model$a[2]
@@ -62,69 +49,73 @@ plott <- function(model, x, grouping, start = -2, finish = 2){
 
 
 # -------------------------------- 2D test manual --------------------------------
+set.seed(9)
 gen <- generate_train_test(N=1000, m0=c(0, 0), m1=c(0, 2))
 costtt <- c(0.7, 0.3)
-model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost = costtt, bias_correction = 1)
-e = err(model, gen$test, gen$test_label)
-rbind(e,
+model <- abcrlda::abcrlda(gen$train, gen$train_label, gamma = 1, cost = costtt, bias_correction = F)
+e = risk_calculate(model, gen$test, gen$test_label)
+rbind(t(as.data.frame(e)),
   t(data.frame(
     estimated_risk = abcrlda::da_risk_estimator(model),
-    cross = abcrlda::cross_validation(gen$train, gen$train_label, gamma = 1, cost=costtt, nfold=10))
+    cross = abcrlda::cross_validation(gen$train, gen$train_label,
+                                      gamma = 1,
+                                      cost=costtt,
+                                      nfold=10,
+                                      bias_correction=model$bias_correction),
+    bias_corr = model$bias_correction)
   ))
 
-abcrlda::cross_validation(gen$train, gen$train_label, gamma = 1, cost=costtt, nfold=10)
-
-
-confusionMatrix(reference = as.factor(gen$test_label),
-                data = (predict(model, gen$test)))
-asd = predict(model, gen$test)
-asd
+# abcrlda::cross_validation(gen$train, gen$train_label, gamma = 1, cost=costtt, nfold=10)
+# confusionMatrix(reference = as.factor(gen$test_label),
+#                 data = (predict(model, gen$test)))
+# asd = predict(model, gen$test)
+# asd
 # asd2 = predict(model, gen$test, type="class")
 # all(asd == as.numeric(asd2))
 # class(predict(model, gen$test, type="class"))
 plott(model, gen$train, gen$train_label)
 plott(model, gen$test, gen$test_label)
 # -------------------------------- 2D test grid_search --------------------------------
-gen <- generate_train_test(m0=c(0, 0), m1=c(0, 1))
-crange <- seq(0.4, 0.7, by=0.05)
+set.seed(9)
+gen <- generate_train_test(m0=c(0, 0), m1=c(0, 2))
+crange <- seq(0.3, 0.7, by=0.05)
 grange <- (c(5,10) %o% 10^(-1:3))
 gs_e <- grid_search(gen$train, gen$train_label,
                   range_gamma = grange,
                   range_cost = crange,
-                  method = "estimator")
+                  method = "estimator",
+                  bias_correction = T)
 
 gs_c <- grid_search(gen$train, gen$train_label,
                    range_gamma = grange,
                    range_cost = crange,
-                   method = "cross")
+                   method = "cross",
+                   bias_correction = T)
 
 
 model_est = abcrlda(gen$train, gen$train_label, gamma = gs_e$gamma, cost = gs_e$cost)
 model_crs = abcrlda(gen$train, gen$train_label, gamma = gs_c$gamma, cost = gs_c$cost)
 
-er_e = err(model_est, gen$test, gen$test_label)
-er_c = err(model_crs, gen$test, gen$test_label)
+er_e = risk_calculate(model_est, gen$test, gen$test_label)
+er_c = risk_calculate(model_crs, gen$test, gen$test_label)
 
-cbind(a = rbind(t(as.data.frame(gs_e)), er_e),
-      b = rbind(t(as.data.frame(gs_c)), er_c))
-# rbind(t(as.data.frame(gs_e)), er_e)
-# rbind(t(as.data.frame(gs_c)), er_c)
+cbind(a = rbind(t(as.data.frame(gs_e)), t(as.data.frame(er_e))),
+      b = rbind(t(as.data.frame(gs_c)), t(as.data.frame(er_c))))
 
-confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_est, gen$test))),
-                mode='everything')
-confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_crs, gen$test))),
-                mode='everything')
+# confusionMatrix(reference = as.factor(gen$test_label),
+#                 data = as.factor((predict(model_est, gen$test))),
+#                 mode='everything')
+# confusionMatrix(reference = as.factor(gen$test_label),
+#                 data = as.factor((predict(model_crs, gen$test))),
+#                 mode='everything')
 
 plott(model_est, gen$train, gen$train_label)
 plott(model_crs, gen$train, gen$train_label)
 
 
-# -------------------------------- multivariate test --------------------------------
+# -------------------------------- multivariate grid_search test --------------------------------
 
 set.seed(9)
-
 gen <- generate_train_test(N=100,N_test=1000,
                            m0 = c(0,0,0,0,0,0,0,0,0,0),
                            m1 = c(1,1,1,1,1,1,1,1,1,1),
@@ -149,39 +140,35 @@ gs_c <- grid_search(gen$train, gen$train_label,
 model_est = abcrlda(gen$train, gen$train_label, gamma = gs_e$gamma, cost = gs_e$cost)
 model_crs = abcrlda(gen$train, gen$train_label, gamma = gs_c$gamma, cost = gs_c$cost)
 
-er_e = err(model_est, gen$test, gen$test_label)
-er_c = err(model_crs, gen$test, gen$test_label)
+er_e = risk_calculate(model_est, gen$test, gen$test_label)
+er_c = risk_calculate(model_crs, gen$test, gen$test_label)
 
-cbind(a = rbind(t(as.data.frame(gs_e)), er_e),
-      b = rbind(t(as.data.frame(gs_c)), er_c))
-# rbind(t(as.data.frame(gs_e)), er_e)
-# rbind(t(as.data.frame(gs_c)), er_c)
+cbind(a = rbind(t(as.data.frame(gs_e)), t(as.data.frame(er_e))),
+      b = rbind(t(as.data.frame(gs_c)), t(as.data.frame(er_c))))
 
-confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_est, gen$test))))
-confusionMatrix(reference = as.factor(gen$test_label),
-                data = as.factor((predict(model_crs, gen$test))))
+# confusionMatrix(reference = as.factor(gen$test_label),
+#                 data = as.factor((predict(model_est, gen$test))))
+# confusionMatrix(reference = as.factor(gen$test_label),
+#                 data = as.factor((predict(model_crs, gen$test))))
 
 
 # -------------------------------- iris dataset --------------------------------
 
 data(iris)
+traindata = iris[ which(iris[,ncol(iris)]=='versicolor' |
+                          iris[,ncol(iris)]=="virginica"), 1:4]
+trainlabel = factor(iris[ which(iris[,ncol(iris)]=='versicolor' |
+                                  iris[,ncol(iris)]=="virginica"), 5])
 
-traindata = iris[ which(iris[,ncol(iris)]=='virginica' |
-                          iris[,ncol(iris)]=="versicolor"), 1:4]
-trainlabel = factor(iris[ which(iris[,ncol(iris)]=='virginica' |
-                                  iris[,ncol(iris)]=="versicolor"), 5])
-bias = 1
-
-rr <- abcrlda(traindata, trainlabel, gamma=1, cost = 0.75, bias_correction = bias)
+rr <- abcrlda(traindata, trainlabel, gamma=1, cost = 0.75, bias_correction = F)
 # stats::predict(rr, traindata)
-e = err(rr, traindata, trainlabel)
+e = risk_calculate(rr, traindata, trainlabel)
 
-rbind(e,
+rbind(t(as.data.frame(e)),
       t(data.frame(
-        bias_correction = bias,
-        restimate = abcrlda::da_risk_estimator(rr),
-        cross = abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75,0.25)))
+          restimate = abcrlda::da_risk_estimator(rr),
+          cross = abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75,0.25)),
+          bias_correction = rr$bias_correction)
       ))
 # abcrlda::cross_validation(traindata, trainlabel, cost=c(0.75, 0.25), nfolds = 3)
 # asd = predict(rr, traindata, type="raw")
@@ -197,28 +184,65 @@ train_label <- train[, ncol(train)]
 test_data <- test[, 1:ncol(train) - 1]
 test_label <- test[, ncol(train)]
 
-costtt <- c(0.7, 0.3)
-bias = FALSE
-model <- abcrlda::abcrlda(train_data, train_label, gamma = 1, cost = costtt, bias_correction = bias)
-e = err(model, test_data, test_label)
-rbind(e,
+model <- abcrlda::abcrlda(train_data, train_label, gamma = 100, cost = c(0.25), bias_correction=F)
+
+e = risk_calculate(model, test_data, test_label)
+rbind(t(as.data.frame(e)),
       t(data.frame(
-        bias_correction = bias,
         estimated_risk = abcrlda::da_risk_estimator(model),
-        cross = abcrlda::cross_validation(train_data, train_label, gamma = 1, cost=costtt, nfold=10))
+        cross = abcrlda::cross_validation(train_data, train_label,
+                                          gamma=model$gamma,
+                                          cost=model$cost, nfold=10,
+                                          bias_correction=model$bias_correction),
+        bias_correction = model$bias_correction)
       ))
 
-abcrlda::cross_validation(train_data, train_label, gamma = 1, cost=costtt, nfold=10)
+# abcrlda::cross_validation(train_data, train_label, gamma = 1, cost=costtt, nfold=10)
 
 
 # -------------------------------- CRAN ---------------------------------
-usethis::use_release_issue()
-usethis::use_cran_comments()
-devtools::check(remote = T)
+# usethis::use_release_issue()
+# usethis::use_cran_comments()
+# devtools::check(remote = T)
 # devtools::check_win_devel()
 # rhub::check_for_cran()
 # rhub::check(platform = "ubuntu-rchk")
 # rhub::check_with_sanitizers()
+
+# -------------------------------- vignettes --------------------------------
+library(abcrlda)
+data(iris)
+
+train_data <- iris[which(iris[, ncol(iris)] == "virginica" |
+                           iris[, ncol(iris)] == "versicolor"), 1:4]
+train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
+                                   iris[, ncol(iris)] == "versicolor"), 5])
+
+model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(0.75, 0.25))
+# r <- predict(model, train_data)
+
+
+test_virginica <- iris[which(iris[, ncol(iris)] == "virginica"), 1:4]
+test_versicolor <- iris[which(iris[, ncol(iris)] == "versicolor"), 1:4]
+
+r <- predict(model, test_virginica)
+sum(r != "virginica") / length(test_virginica)
+
+r <- predict(model, test_versicolor)
+sum(r != "versicolor") / length(test_virginica)
+
+
+cost_range <- matrix(1:10, ncol = 2)
+gamma_range <- c(0.1, 1, 10, 100, 1000)
+
+gs <- grid_search(train_data, train_label,
+                  range_gamma = gamma_range,
+                  range_cost = cost_range,
+                  method = "cross")
+model <- abcrlda(train_data, train_label,
+                 gamma = gs$gamma, cost = gs$cost)
+predict(model, train_data)
+
 # -------------------------------- other --------------------------------
 data(iris)
 train_data <- iris[which(iris[, ncol(iris)] == "virginica" |

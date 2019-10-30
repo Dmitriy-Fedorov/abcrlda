@@ -50,6 +50,6 @@ all(a == b & a == c & b == c)
 Other functions in the package: \code{\link{abcrlda}},
   \code{\link{cross_validation}},
   \code{\link{da_risk_estimator}},
-  \code{\link{grid_search}}
+  \code{\link{grid_search}}, \code{\link{risk_calculate}}
 }
 \concept{functions in the package}

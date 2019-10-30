@@ -10,12 +10,12 @@ grid_search(x, y, range_gamma, range_cost, method = "estimator",
 \arguments{
 \item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
 
-\item{y}{a numeric or factor vector of class labels. Factor should have two levels
+\item{y}{a numeric vector or factor of class labels. Factor should have two levels
 or be a vector with two distinct values.
 If \code{y} is presented as a vector, it will be coerced into a factor.
 Length of \code{y} has to correspond to number of samples in \code{x}.}
 
-\item{range_gamma}{vector of gamma values to check}
+\item{range_gamma}{vector of \code{gamma} values to check}
 
 \item{range_cost}{nobs x 1 vector (values should be between 0 and 1) or
 nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
@@ -23,7 +23,9 @@ of cost values to check}
 
 \item{method}{selects method to evaluete risk. "estimator" and "cross"}
 
-\item{nfolds}{number of fold to use with cross-validation. Default is 10.}
+\item{nfolds}{number of fold to use with cross-validation. Default is 10.
+In case of inbalanced data \code{nfolds} should not be greater than number of observations in
+smaller class.}
 }
 \value{
 List of best founded parameters
@@ -86,6 +88,7 @@ predict(model, train_data)
 Other functions in the package: \code{\link{abcrlda}},
   \code{\link{cross_validation}},
   \code{\link{da_risk_estimator}},
-  \code{\link{predict.abcrlda}}
+  \code{\link{predict.abcrlda}},
+  \code{\link{risk_calculate}}
 }
 \concept{functions in the package}
