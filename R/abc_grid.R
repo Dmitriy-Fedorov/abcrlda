@@ -40,7 +40,11 @@
 #' @example inst/examples/example_grid.R
 
 grid_search <- function(x, y, range_gamma, range_cost,
-                        method="estimator", nfolds=10){
+                        method="estimator", nfolds=10, bias_correction=TRUE){
+
+  if(!bias_correction & method=="estimator")
+    warning("Estimator (Double Asymptotic Risk Estimator) would not give meaningful
+            results when bias_correction option is FALSE")
 
   list_gamma <- numeric()
   list_cost <- numeric()
@@ -65,11 +69,11 @@ grid_search <- function(x, y, range_gamma, range_cost,
         list_gamma <- c(list_gamma, gamma)
         list_cost <- rbind(list_cost, cost)
         risk_estimates <- c(risk_estimates,
-                            cross_validation(x, y, gamma, cost, nfolds)$ecr)
+                            cross_validation(x, y, gamma, cost, nfolds, bias_correction)$risk_cross)
       }
     }
   }
-  best_param_index <- risk_estimates == min(risk_estimates)
+  best_param_index <- which.min(risk_estimates)
   return(structure(list(gamma = list_gamma[best_param_index],
                         cost = list_cost[best_param_index, ],
                         risk = risk_estimates[best_param_index])))
@@ -84,7 +88,10 @@ grid_search <- function(x, y, range_gamma, range_cost,
 # It's value should be between 0 and 1 (0 < cost_10 < 1)
 # Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
 # @param nfolds Number of for cross validation algorithm
-#' @return Returns average risk after cross validation
+#' @return Returns list of parameters
+#'   \item{risk_cross}{Returns risk estimation where \eqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}}
+#'   \item{e_0}{Error estimate for class 0}
+#'   \item{e_1}{Error estimate for class 1}
 #' @export
 #' @family functions in the package
 #' @section Reference:
@@ -93,7 +100,7 @@ grid_search <- function(x, y, range_gamma, range_cost,
 #'   Bioinformatics (Oxford, England). 30. 10.1093/bioinformatics/btu527.
 #'   URL: \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4296143/pdf/btu527.pdf}
 #' @example inst/examples/example_cross.R
-cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
+cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10, bias_correction=TRUE){
 
   x <- as.matrix(x)
   shufled_index <- sample(nrow(x))
@@ -153,7 +160,7 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
       train_label <- factor(c(y0[-test_index0], y1[-test_index1]),
                             levels=1:k, labels=lev)
 
-      model <- abcrlda(train_data, train_label, gamma, cost)
+      model <- abcrlda(train_data, train_label, gamma, cost, bias_correction)
 
       res0 <- as.numeric(test_data0 %*% model$a + model$m <= 0)
       res1 <- as.numeric(test_data1 %*% model$a + model$m <= 0)
@@ -164,9 +171,9 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10){
     }
   }
 
-  return(list(ecross = mean(e0) * cost[1] + mean(e1) * cost[2],
-              e0 = mean(e0),
-              e1 = mean(e1)))
+  return(list(risk_cross = mean(e0) * cost[1] + mean(e1) * cost[2],
+              e_0 = mean(e0),
+              e_1 = mean(e1)))
 }
 
 #' Double Asymptotic Risk Estimator
