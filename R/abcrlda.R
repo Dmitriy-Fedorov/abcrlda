@@ -179,8 +179,8 @@ risk_calculate <- function(object, x_test, y_true){
 
   test0 <- x_test[y_true == object$lev[1], ]
   test1 <- x_test[y_true == object$lev[2], ]
-  res0 <- as.numeric(predict(object, test0)) - 1
-  res1 <- as.numeric(predict(object, test1)) - 1
+  res0 <- as.numeric(stats::predict(object, test0)) - 1
+  res1 <- as.numeric(stats::predict(object, test1)) - 1
   nerr0 <- sum(res0)
   nerr1 <- sum(!res1)
   err0 <- nerr0 / length(res0)
