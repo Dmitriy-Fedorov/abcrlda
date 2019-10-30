@@ -3,7 +3,7 @@
 #' for Cost-Sensitive Binary Classification
 #' @description Performs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #' @param x Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.
-#' @param y a numeric or factor vector of class labels. Factor should have two levels
+#' @param y a numeric vector or factor of class labels. Factor should have two levels
 #'   or be a vector with two distinct values.
 #'   If \code{y} is presented as a vector, it will be coerced into a factor.
 #'   Length of \code{y} has to correspond to number of samples in \code{x}.
@@ -120,6 +120,7 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5), bias_correction=TRUE){
                         Ghat1 = Ghat1,
                         Dhat = Dhat,
                         omegaopt = omegaopt,
+                        bias_correction = bias_correction,
                         lev = lev), class = "abcrlda"))
 
 }
@@ -157,3 +158,36 @@ predict.abcrlda <- function(object, newx, ...){
   return(as.factor(cl))
 }
 
+
+#' Risk Calculate
+#' @description Computes class predictions for new data based on a given abcrlda object
+#' @param object An object of class "abcrlda".
+#' @param x_test Matrix of values for x for which true class labels are known.
+#' @param y_true a numeric vector or factor of true class labels. Factor should have two levels
+#'   or be a vector with two distinct values.
+#'   If \code{y_true} is presented as a vector, it will be coerced into a factor.
+#'   Length of \code{y_true} has to correspond to number of samples in \code{x_test}.
+#'
+#' @return
+#' @export
+#' @family functions in the package
+#'
+#' @example inst/examples/example_risk_calculate.R
+risk_calculate <- function(object, x_test, y_true){
+  if (!is.factor(y_true))
+    y_true <- as.factor(y_true)
+
+  test0 <- x_test[y_true == object$lev[1], ]
+  test1 <- x_test[y_true == object$lev[2], ]
+  res0 <- as.numeric(predict(object, test0)) - 1
+  res1 <- as.numeric(predict(object, test1)) - 1
+  nerr0 <- sum(res0)
+  nerr1 <- sum(!res1)
+  err0 <- nerr0 / length(res0)
+  err1 <- nerr1 / length(res1)
+  return(structure(list(actual_err0 = err0,
+                      actual_err1 = err1,
+                      actual_errTotal = (nerr0 + nerr1) / length(y_true),
+                      actual_normrisk = err0 * object$ncost[1] + err1 * object$ncost[2],
+                      actual_risk = err0 * object$cost[1] + err1 * object$cost[2])))
+}
