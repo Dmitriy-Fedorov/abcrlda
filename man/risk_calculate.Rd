@@ -4,20 +4,27 @@
 \alias{risk_calculate}
 \title{Risk Calculate}
 \usage{
-risk_calculate(object, x_test, y_true)
+risk_calculate(object, x_true, y_true)
 }
 \arguments{
 \item{object}{An object of class "abcrlda".}
 
-\item{x_test}{Matrix of values for x for which true class labels are known.}
+\item{x_true}{Matrix of values for x for which true class labels are known.}
 
-\item{y_true}{a numeric vector or factor of true class labels. Factor should have two levels
-or be a vector with two distinct values.
+\item{y_true}{A numeric vector or factor of true class labels. Factor should have either two levels or be a vector with two distinct values.
 If \code{y_true} is presented as a vector, it will be coerced into a factor.
 Length of \code{y_true} has to correspond to number of samples in \code{x_test}.}
 }
+\value{
+A list of parameters where
+  \item{actual_err0}{Error rate for class 0.}
+  \item{actual_err1}{Error rate for class 1.}
+  \item{actual_errTotal}{Error rate overall.}
+  \item{actual_normrisk}{Risk value normilized to be between 0 and 1.}
+  \item{actual_risk}{Risk value without normilization.}
+}
 \description{
-Computes class predictions for new data based on a given abcrlda object
+Estimates risk and error by applying a constructed classifier (an object of class abcrlda) to a given set of observations.
 }
 \examples{
 data(iris)

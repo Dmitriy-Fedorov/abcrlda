@@ -12,7 +12,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2019-10-28" />
+<meta name="date" content="2019-10-31" />
 
 <title>Quick start with abcrlda</title>
 
@@ -302,25 +302,25 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 
 <h1 class="title toc-ignore">Quick start with abcrlda</h1>
-<h4 class="date">2019-10-28</h4>
+<h4 class="date">2019-10-31</h4>
 
 
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>The abcrlda package implements Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis. It is an extension of classical RLDA (Regularized Linear Discriminant Analysis) algorithm that improves performance in case of Cost-Sensitive Binary Classification. ABCRLDA makes it possible to prioritize classes differently during fitting process. Missclassification cost could be different for different classes.</p>
-<p>For some application cost of making mistake For example, in case of some diseases it is more important to decrease number of false negatives (illness is not detected) even at expence</p>
 </div>
 <div id="quick-start" class="section level2">
 <h2>Quick Start</h2>
 <p>The purpose of this section is to give examples of basic usage in order to give users a general sense of the package. For illustration purposes iris dataset will be used. First, we load the abcrlda package and iris dataset</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(abcrlda)</a>
 <a class="sourceLine" id="cb1-2" title="2"><span class="kw">data</span>(iris)</a></code></pre></div>
-<p>abcrlda is designed for binary classification therefore we will limit training data to two species (virginica and versicolor) from iris dataset</p>
+<p>Abcrlda is designed for binary classification therefore we will limit training data to two species (virginica and versicolor), 50 observation for each</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">train_data &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;versicolor&quot;</span> <span class="op">|</span></a>
 <a class="sourceLine" id="cb2-2" title="2"><span class="st">                         </span>iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;virginica&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
 <a class="sourceLine" id="cb2-3" title="3">train_label &lt;-<span class="st"> </span><span class="kw">factor</span>(iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;versicolor&quot;</span> <span class="op">|</span></a>
 <a class="sourceLine" id="cb2-4" title="4"><span class="st">                                 </span>iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;virginica&quot;</span>), <span class="dv">5</span>])</a></code></pre></div>
+<p>After that we are ready to fit model and make predictions using resubstitution</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label)</a>
 <a class="sourceLine" id="cb3-2" title="2"><span class="kw">predict</span>(model, train_data)</a></code></pre></div>
 <pre><code>##   [1] versicolor versicolor virginica  versicolor versicolor versicolor
@@ -341,89 +341,91 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##  [91] virginica  virginica  virginica  virginica  virginica  virginica 
 ##  [97] virginica  virginica  virginica  virginica 
 ## Levels: versicolor virginica</code></pre>
+<p>Accuracy can be evaluated by this function</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">risk_calculate</span>(model, train_data, train_label)</a></code></pre></div>
+<pre><code>## $actual_err0
+## [1] 0.06
+## 
+## $actual_err1
+## [1] 0.1
+## 
+## $actual_errTotal
+## [1] 0.08
+## 
+## $actual_normrisk
+## [1] 0.08
+## 
+## $actual_risk
+## [1] 0.08</code></pre>
 <div id="controlling-priorities" class="section level3">
 <h3>Controlling priorities</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="fl">0.75</span>, <span class="fl">0.25</span>))</a>
-<a class="sourceLine" id="cb5-2" title="2"></a>
-<a class="sourceLine" id="cb5-3" title="3"></a>
-<a class="sourceLine" id="cb5-4" title="4">test_versicolor &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;versicolor&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
-<a class="sourceLine" id="cb5-5" title="5">test_virginica &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;virginica&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
-<a class="sourceLine" id="cb5-6" title="6"></a>
-<a class="sourceLine" id="cb5-7" title="7">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_versicolor)</a>
-<a class="sourceLine" id="cb5-8" title="8"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;versicolor&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for first class</span></a></code></pre></div>
+<p>Cost is one of the most important hyperparameters for the abcrlda. It controls prioritization of classes during model fitting and it used for overall risk calculation. Error rate for more important class tends to be smaller.</p>
+<p><code>R = e_0 * cost_10 + e_1 * cost_01</code></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="fl">0.75</span>, <span class="fl">0.25</span>))</a>
+<a class="sourceLine" id="cb7-2" title="2"></a>
+<a class="sourceLine" id="cb7-3" title="3"></a>
+<a class="sourceLine" id="cb7-4" title="4">test_versicolor &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;versicolor&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
+<a class="sourceLine" id="cb7-5" title="5">test_virginica &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;virginica&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
+<a class="sourceLine" id="cb7-6" title="6"></a>
+<a class="sourceLine" id="cb7-7" title="7">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_versicolor)</a>
+<a class="sourceLine" id="cb7-8" title="8"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;versicolor&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for first class</span></a></code></pre></div>
 <pre><code>## [1] 0</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_virginica)</a>
-<a class="sourceLine" id="cb7-2" title="2"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;virginica&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for second class</span></a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_virginica)</a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;virginica&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for second class</span></a></code></pre></div>
 <pre><code>## [1] 0.26</code></pre>
-<p>If costs are switched</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))</a>
-<a class="sourceLine" id="cb9-2" title="2"></a>
-<a class="sourceLine" id="cb9-3" title="3"></a>
-<a class="sourceLine" id="cb9-4" title="4">test_versicolor &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;versicolor&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
-<a class="sourceLine" id="cb9-5" title="5">test_virginica &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;virginica&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
-<a class="sourceLine" id="cb9-6" title="6"></a>
-<a class="sourceLine" id="cb9-7" title="7">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_versicolor)</a>
-<a class="sourceLine" id="cb9-8" title="8"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;versicolor&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for first class</span></a></code></pre></div>
+<p>If costs are reversed error rates are changed accordingly:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="fl">0.25</span>, <span class="fl">0.75</span>))</a>
+<a class="sourceLine" id="cb11-2" title="2"></a>
+<a class="sourceLine" id="cb11-3" title="3"></a>
+<a class="sourceLine" id="cb11-4" title="4">test_versicolor &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;versicolor&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
+<a class="sourceLine" id="cb11-5" title="5">test_virginica &lt;-<span class="st"> </span>iris[<span class="kw">which</span>(iris[, <span class="kw">ncol</span>(iris)] <span class="op">==</span><span class="st"> &quot;virginica&quot;</span>), <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>]</a>
+<a class="sourceLine" id="cb11-6" title="6"></a>
+<a class="sourceLine" id="cb11-7" title="7">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_versicolor)</a>
+<a class="sourceLine" id="cb11-8" title="8"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;versicolor&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for first class</span></a></code></pre></div>
 <pre><code>## [1] 0.18</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_virginica)</a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;virginica&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for second class</span></a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">r &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_virginica)</a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="kw">sum</span>(r <span class="op">!=</span><span class="st"> &quot;virginica&quot;</span>) <span class="op">/</span><span class="st"> </span><span class="kw">nrow</span>(test_virginica)  <span class="co"># resubstitution error for second class</span></a></code></pre></div>
 <pre><code>## [1] 0.02</code></pre>
 </div>
 <div id="affects-of-cost-values-on-classification" class="section level3">
 <h3>Affects of cost values on classification</h3>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">gamma =</span> <span class="fl">0.5</span>, <span class="dt">cost =</span> <span class="fl">0.75</span>)</a>
-<a class="sourceLine" id="cb13-2" title="2">a &lt;-<span class="st"> </span><span class="kw">predict</span>(model, train_data)</a>
-<a class="sourceLine" id="cb13-3" title="3"><span class="co"># same params but more explicit</span></a>
-<a class="sourceLine" id="cb13-4" title="4">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">gamma =</span> <span class="fl">0.5</span>, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="fl">0.75</span>, <span class="fl">0.25</span>))</a>
-<a class="sourceLine" id="cb13-5" title="5">b &lt;-<span class="st"> </span><span class="kw">predict</span>(model, train_data)</a>
-<a class="sourceLine" id="cb13-6" title="6"><span class="co"># same class costs ratio</span></a>
-<a class="sourceLine" id="cb13-7" title="7">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">gamma =</span> <span class="fl">0.5</span>, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb13-8" title="8">c &lt;-<span class="st"> </span><span class="kw">predict</span>(model, train_data)</a>
-<a class="sourceLine" id="cb13-9" title="9"><span class="co"># all this model will give the same predictions</span></a>
-<a class="sourceLine" id="cb13-10" title="10"><span class="kw">all</span>(a <span class="op">==</span><span class="st"> </span>b <span class="op">&amp;</span><span class="st"> </span>a <span class="op">==</span><span class="st"> </span>c <span class="op">&amp;</span><span class="st"> </span>b <span class="op">==</span><span class="st"> </span>c)</a></code></pre></div>
+<p>Cost values can be provided in different ways. There is short form for normalized cost values:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">gamma =</span> <span class="fl">0.5</span>, <span class="dt">cost =</span> <span class="fl">0.75</span>)</a>
+<a class="sourceLine" id="cb15-2" title="2">a &lt;-<span class="st"> </span><span class="kw">predict</span>(model, train_data)</a></code></pre></div>
+<p>Which is equivalent to:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="co"># same params but more explicit</span></a>
+<a class="sourceLine" id="cb16-2" title="2">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">gamma =</span> <span class="fl">0.5</span>, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="fl">0.75</span>, <span class="fl">0.25</span>))</a>
+<a class="sourceLine" id="cb16-3" title="3">b &lt;-<span class="st"> </span><span class="kw">predict</span>(model, train_data)</a></code></pre></div>
+<p>Scaling of a cost do not change prediction that will be made by model:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="co"># same class costs ratio</span></a>
+<a class="sourceLine" id="cb17-2" title="2">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label, <span class="dt">gamma =</span> <span class="fl">0.5</span>, <span class="dt">cost =</span> <span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">1</span>))</a>
+<a class="sourceLine" id="cb17-3" title="3">c &lt;-<span class="st"> </span><span class="kw">predict</span>(model, train_data)</a>
+<a class="sourceLine" id="cb17-4" title="4"></a>
+<a class="sourceLine" id="cb17-5" title="5"><span class="co"># all this model will give the same predictions</span></a>
+<a class="sourceLine" id="cb17-6" title="6"><span class="kw">all</span>(a <span class="op">==</span><span class="st"> </span>b <span class="op">&amp;</span><span class="st"> </span>a <span class="op">==</span><span class="st"> </span>c <span class="op">&amp;</span><span class="st"> </span>b <span class="op">==</span><span class="st"> </span>c)</a></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="grid-search-for-optimal-hyperparameters" class="section level3">
 <h3>Grid Search for optimal Hyperparameters</h3>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">cost_range &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="dt">by =</span> <span class="fl">0.2</span>)</a>
-<a class="sourceLine" id="cb15-2" title="2">gamma_range &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)</a>
-<a class="sourceLine" id="cb15-3" title="3"></a>
-<a class="sourceLine" id="cb15-4" title="4">gs &lt;-<span class="st"> </span><span class="kw">grid_search</span>(train_data, train_label,</a>
-<a class="sourceLine" id="cb15-5" title="5">                  <span class="dt">range_gamma =</span> gamma_range,</a>
-<a class="sourceLine" id="cb15-6" title="6">                  <span class="dt">range_cost =</span> cost_range,</a>
-<a class="sourceLine" id="cb15-7" title="7">                  <span class="dt">method =</span> <span class="st">&quot;estimator&quot;</span>)</a>
-<a class="sourceLine" id="cb15-8" title="8">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label,</a>
-<a class="sourceLine" id="cb15-9" title="9">                 <span class="dt">gamma =</span> gs<span class="op">$</span>gamma, <span class="dt">cost =</span> gs<span class="op">$</span>cost)</a>
-<a class="sourceLine" id="cb15-10" title="10"><span class="co"># predict(model, train_data)</span></a>
-<a class="sourceLine" id="cb15-11" title="11">gs</a></code></pre></div>
-<pre><code>## $gamma
-## [1] 100
-## 
-## $cost
-## cost 
-##  0.9 
-## 
-## $risk
-## [1] 0.01931884</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1">cost_range &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">8</span>, <span class="dt">ncol =</span> <span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb17-2" title="2">gamma_range &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>)</a>
-<a class="sourceLine" id="cb17-3" title="3"></a>
-<a class="sourceLine" id="cb17-4" title="4">gs &lt;-<span class="st"> </span><span class="kw">grid_search</span>(train_data, train_label,</a>
-<a class="sourceLine" id="cb17-5" title="5">                  <span class="dt">range_gamma =</span> gamma_range,</a>
-<a class="sourceLine" id="cb17-6" title="6">                  <span class="dt">range_cost =</span> cost_range,</a>
-<a class="sourceLine" id="cb17-7" title="7">                  <span class="dt">method =</span> <span class="st">&quot;cross&quot;</span>)</a>
-<a class="sourceLine" id="cb17-8" title="8">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label,</a>
-<a class="sourceLine" id="cb17-9" title="9">                 <span class="dt">gamma =</span> gs<span class="op">$</span>gamma, <span class="dt">cost =</span> gs<span class="op">$</span>cost)</a>
-<a class="sourceLine" id="cb17-10" title="10"><span class="co"># predict(model, train_data)</span></a>
-<a class="sourceLine" id="cb17-11" title="11">gs</a></code></pre></div>
-<pre><code>## $gamma
-## [1] 10
-## 
-## $cost
-## [1] 1 5
-## 
-## $risk
-## [1] 0.08</code></pre>
+<p>This package contain function to performs grid search for optimal hyperparameters within specified parameters range. Performanse of a model can be evaluated using double asymptotic risk estimation or cross validation for separate sampling adjasted for cost. Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation while cross validation is more computationally expensive.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">cost_range &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="fl">0.1</span>, <span class="fl">0.9</span>, <span class="dt">by =</span> <span class="fl">0.2</span>)</a>
+<a class="sourceLine" id="cb19-2" title="2">gamma_range &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)</a>
+<a class="sourceLine" id="cb19-3" title="3"></a>
+<a class="sourceLine" id="cb19-4" title="4">gs &lt;-<span class="st"> </span><span class="kw">grid_search</span>(train_data, train_label,</a>
+<a class="sourceLine" id="cb19-5" title="5">                  <span class="dt">range_gamma =</span> gamma_range,</a>
+<a class="sourceLine" id="cb19-6" title="6">                  <span class="dt">range_cost =</span> cost_range,</a>
+<a class="sourceLine" id="cb19-7" title="7">                  <span class="dt">method =</span> <span class="st">&quot;estimator&quot;</span>)</a>
+<a class="sourceLine" id="cb19-8" title="8">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label,</a>
+<a class="sourceLine" id="cb19-9" title="9">                 <span class="dt">gamma =</span> gs<span class="op">$</span>gamma, <span class="dt">cost =</span> gs<span class="op">$</span>cost)</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">cost_range &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="dt">ncol =</span> <span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb20-2" title="2">gamma_range &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>)</a>
+<a class="sourceLine" id="cb20-3" title="3"></a>
+<a class="sourceLine" id="cb20-4" title="4">gs &lt;-<span class="st"> </span><span class="kw">grid_search</span>(train_data, train_label,</a>
+<a class="sourceLine" id="cb20-5" title="5">                  <span class="dt">range_gamma =</span> gamma_range,</a>
+<a class="sourceLine" id="cb20-6" title="6">                  <span class="dt">range_cost =</span> cost_range,</a>
+<a class="sourceLine" id="cb20-7" title="7">                  <span class="dt">method =</span> <span class="st">&quot;cross&quot;</span>)</a>
+<a class="sourceLine" id="cb20-8" title="8">model &lt;-<span class="st"> </span><span class="kw">abcrlda</span>(train_data, train_label,</a>
+<a class="sourceLine" id="cb20-9" title="9">                 <span class="dt">gamma =</span> gs<span class="op">$</span>gamma, <span class="dt">cost =</span> gs<span class="op">$</span>cost)</a></code></pre></div>
 </div>
 </div>
 

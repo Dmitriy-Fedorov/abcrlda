@@ -1,29 +1,29 @@
 
 #' Grid Search
-#' @description Performs grid search for optimal hyperparameters (code{gamma} and code{cost})
+#' @description Performs grid search to estimate the optimal hyperparameters (\code{gamma} and \code{cost})
 #'   within specified space based on double asymptotic risk estimation or cross validation.
-#'   Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation.
-#'   For further details refer to paper in the refernce section.
-#'   \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
+#'   Double asymptotic risk estimation is more efficient to compute because it uses closed form for risk estimation.
+#'   For further details, refer to the article in the reference section.
+#'   \deqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}
 #'   \deqn{\varepsilon_i = \Phi(\frac{(-1)^{i+1} ( \hat{G}_i + \hat{\omega}_{opt}/\gamma   )}{\sqrt{\hat{D}}})}{e_i = CDF((-1)^(i+1) (Ghat_i + omega_opt/gamma) / sqrt(Dhat))}
-#'   Cross validation was adapted to work with cost based risk estimation and works optimally with separate sampling
+#'   Separate sampling cross-validation (see cross-validation function) was adapted to work with cost-based risk estimation.
 #'
 # @param x Matrix or data.frame of observations.
 # @param y Grouping variable. A vector of numeric values 0 and 1 is recommended.
 # Length has to correspond to nrow(x).
-#' @param range_gamma vector of \code{gamma} values to check
+#' @param range_gamma Vector of \code{gamma} values to check.
 #' @param range_cost nobs x 1 vector (values should be between 0 and 1) or
 #'   nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
-#'   of cost values to check
-#' @param method selects method to evaluete risk. "estimator" and "cross"
-#' @param nfolds number of fold to use with cross-validation. Default is 10.
-#'  In case of inbalanced data \code{nfolds} should not be greater than number of observations in
+#'   of cost values to check.
+#' @param method Selects method to evaluete risk. "estimator" and "cross".
+#' @param nfolds Number of folds to use with cross-validation. Default is 10.
+#'  In case of imbalanced data, \code{nfolds} should not be greater than the number of observations in
 #'  smaller class.
 #' @inheritParams abcrlda
-#' @return List of best founded parameters
-#'   \item{cost}{cost value for which risk estimates are lowest during the search.}
-#'   \item{gamma}{gamma regularization parameter for which risk estimates are lowest during the search}
-#'   \item{risk}{Smalest risk value estimated during grid search.}
+#' @return List of estimated parameters.
+#'   \item{cost}{Cost value for which risk estimates are lowest during the search.}
+#'   \item{gamma}{Gamma regularization parameter for which risk estimates are lowest during the search.}
+#'   \item{risk}{Lowest risk value estimated during grid search.}
 #' @export
 #' @family functions in the package
 #' @section Reference:
@@ -79,8 +79,8 @@ grid_search <- function(x, y, range_gamma, range_cost,
                         risk = risk_estimates[best_param_index])))
 }
 
-#' Cross Validation for separate sampling adjasted for cost
-#' @description
+#' Cross Validation for separate sampling adjusted for cost.
+#' @description This function implements Cross Validation for separate sampling adjusted for cost.
 #' @inheritParams grid_search
 #' @inheritParams abcrlda
 # @param gamma regularization parameter
@@ -88,10 +88,10 @@ grid_search <- function(x, y, range_gamma, range_cost,
 # It's value should be between 0 and 1 (0 < cost_10 < 1)
 # Values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class
 # @param nfolds Number of for cross validation algorithm
-#' @return Returns list of parameters
-#'   \item{risk_cross}{Returns risk estimation where \eqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}}
-#'   \item{e_0}{Error estimate for class 0}
-#'   \item{e_1}{Error estimate for class 1}
+#' @return Returns list of parameters.
+#'   \item{risk_cross}{Returns risk estimation where \eqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}}
+#'   \item{e_0}{Error estimate for class 0.}
+#'   \item{e_1}{Error estimate for class 1.}
 #' @export
 #' @family functions in the package
 #' @section Reference:
@@ -177,11 +177,11 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10, bias_co
 }
 
 #' Double Asymptotic Risk Estimator
-#' @description Generalized consistent estimator of risk
+#' @description This function implements the generalized (double asymptotic) consistent estimator of risk.
 #' @inheritParams predict.abcrlda
 #'
 #' @return Calculates risk based on estimated class error rates and misclassification costs
-#'   \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
+#'   \deqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}
 #' @export
 #' @family functions in the package
 #' @example inst/examples/example_risk.R

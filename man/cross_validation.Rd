@@ -2,47 +2,53 @@
 % Please edit documentation in R/abc_grid.R
 \name{cross_validation}
 \alias{cross_validation}
-\title{Cross Validation for separate sampling adjasted for cost}
+\title{Cross Validation for separate sampling adjusted for cost.}
 \usage{
-cross_validation(x, y, gamma = 1, cost = c(0.5, 0.5), nfolds = 10)
+cross_validation(x, y, gamma = 1, cost = c(0.5, 0.5), nfolds = 10,
+  bias_correction = TRUE)
 }
 \arguments{
-\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
+\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an feature vector.}
 
-\item{y}{a numeric vector or factor of class labels. Factor should have two levels
-or be a vector with two distinct values.
+\item{y}{A numeric vector or factor of class labels. Factor should have either two levels or be
+a vector with two distinct values.
 If \code{y} is presented as a vector, it will be coerced into a factor.
 Length of \code{y} has to correspond to number of samples in \code{x}.}
 
-\item{gamma}{Regularization parameter \eqn{\gamma}{gamma} in the following equation
+\item{gamma}{Regularization parameter \eqn{\gamma}{gamma} in the ABC-RLDA discriminant function given by:
 \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
-- log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
-Formulas and derivations for parameters used in above equation can be found in the journal paper under reference section.}
+- log(\frac{C_{01}}{C_{10}}) + \hat{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
+\deqn{H = (I_p + \gamma \hat{\Sigma})^{-1}}{H = (I_p + gamma Sigma_hat)^-1}
+Formulas and derivations for parameters used in above equation can be found in the article under reference section.}
 
-\item{cost}{parameter that controls prioretization of classes.
- This is a vector of length 1 or 2 where first value is \eqn{C_{10}}{C_10} (represents prioretization of class 0)
- and second value if provided is \eqn{C_{01}}{C_01} (represents prioretization of class 1).
- Default value is c(0.5, 0.5), so both classes have equal priority and
- risk essentially becomes equivalent to error rate.
+\item{cost}{Parameter that controls the overall misclassification costs.
+ This is a vector of length 1 or 2 where the first value is \eqn{C_{10}}{C_10} (represents the cost of assigning label 1 when the true label is 0)
+ and the second value, if provided, is \eqn{C_{01}}{C_01} (represents the cost of assigning label 0 when the true label is 1).
+ The default setting is c(0.5, 0.5), so both classes have equal misclassification costs
 
- If single value is provided it should be normalized to be between 0 and 1 (but not including 0 or 1).
- This value will be assigned to \eqn{C_{10}}{C_10} and
- \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
- In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.}
+ If a single value is provided, it should be normalized to lie between 0 and 1 (but not including 0 or 1).
+ This value will be assigned to \eqn{C_{10}}{C_10} while
+ \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}.}
 
-\item{nfolds}{number of fold to use with cross-validation. Default is 10.
-In case of inbalanced data \code{nfolds} should not be greater than number of observations in
+\item{nfolds}{Number of folds to use with cross-validation. Default is 10.
+In case of imbalanced data, \code{nfolds} should not be greater than the number of observations in
 smaller class.}
+
+\item{bias_correction}{Takes in a boolean value.
+If \code{bias_correction} is TRUE, then asymptotic bias correction will be performed.
+Otherwise, (if \code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
+the ABCRLDA is the classical RLDA.
+The default is TRUE.}
 }
 \value{
-Returns list of parameters
-  \item{risk_cross}{Returns risk estimation where \eqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}}
-  \item{e_0}{Error estimate for class 0}
-  \item{e_1}{Error estimate for class 1}
+Returns list of parameters.
+  \item{risk_cross}{Returns risk estimation where \eqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}}
+  \item{e_0}{Error estimate for class 0.}
+  \item{e_1}{Error estimate for class 1.}
 }
 \description{
-Cross Validation for separate sampling adjasted for cost
+This function implements Cross Validation for separate sampling adjusted for cost.
 }
 \section{Reference}{
 

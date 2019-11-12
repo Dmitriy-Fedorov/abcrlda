@@ -5,42 +5,48 @@
 \title{Grid Search}
 \usage{
 grid_search(x, y, range_gamma, range_cost, method = "estimator",
-  nfolds = 10)
+  nfolds = 10, bias_correction = TRUE)
 }
 \arguments{
-\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
+\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an feature vector.}
 
-\item{y}{a numeric vector or factor of class labels. Factor should have two levels
-or be a vector with two distinct values.
+\item{y}{A numeric vector or factor of class labels. Factor should have either two levels or be
+a vector with two distinct values.
 If \code{y} is presented as a vector, it will be coerced into a factor.
 Length of \code{y} has to correspond to number of samples in \code{x}.}
 
-\item{range_gamma}{vector of \code{gamma} values to check}
+\item{range_gamma}{Vector of \code{gamma} values to check.}
 
 \item{range_cost}{nobs x 1 vector (values should be between 0 and 1) or
 nobs x 2 matrix (each row is cost pair value c(\eqn{C_{10}}{C_10}, \eqn{C_{01}}{C_01}))
-of cost values to check}
+of cost values to check.}
 
-\item{method}{selects method to evaluete risk. "estimator" and "cross"}
+\item{method}{Selects method to evaluete risk. "estimator" and "cross".}
 
-\item{nfolds}{number of fold to use with cross-validation. Default is 10.
-In case of inbalanced data \code{nfolds} should not be greater than number of observations in
+\item{nfolds}{Number of folds to use with cross-validation. Default is 10.
+In case of imbalanced data, \code{nfolds} should not be greater than the number of observations in
 smaller class.}
+
+\item{bias_correction}{Takes in a boolean value.
+If \code{bias_correction} is TRUE, then asymptotic bias correction will be performed.
+Otherwise, (if \code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
+the ABCRLDA is the classical RLDA.
+The default is TRUE.}
 }
 \value{
-List of best founded parameters
-  \item{cost}{cost value for which risk estimates are lowest during the search.}
-  \item{gamma}{gamma regularization parameter for which risk estimates are lowest during the search}
-  \item{risk}{Smalest risk value estimated during grid search.}
+List of estimated parameters.
+  \item{cost}{Cost value for which risk estimates are lowest during the search.}
+  \item{gamma}{Gamma regularization parameter for which risk estimates are lowest during the search.}
+  \item{risk}{Lowest risk value estimated during grid search.}
 }
 \description{
-Performs grid search for optimal hyperparameters (code{gamma} and code{cost})
+Performs grid search to estimate the optimal hyperparameters (\code{gamma} and \code{cost})
   within specified space based on double asymptotic risk estimation or cross validation.
-  Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation.
-  For further details refer to paper in the refernce section.
-  \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
+  Double asymptotic risk estimation is more efficient to compute because it uses closed form for risk estimation.
+  For further details, refer to the article in the reference section.
+  \deqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}
   \deqn{\varepsilon_i = \Phi(\frac{(-1)^{i+1} ( \hat{G}_i + \hat{\omega}_{opt}/\gamma   )}{\sqrt{\hat{D}}})}{e_i = CDF((-1)^(i+1) (Ghat_i + omega_opt/gamma) / sqrt(Dhat))}
-  Cross validation was adapted to work with cost based risk estimation and works optimally with separate sampling
+  Separate sampling cross-validation (see cross-validation function) was adapted to work with cost-based risk estimation.
 }
 \section{Reference}{
 

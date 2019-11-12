@@ -17,10 +17,11 @@ ABCRLDA makes it possible to prioritize classes differently during fitting proce
 Missclassification cost could be different for different classes.
 
 
+```{r eval=F, include=F}
 For some application cost of making mistake
 For example, in case of some diseases it is more important to
 decrease number of false negatives (illness is not detected) even at expence 
-
+```
 
 ## Quick Start
 The purpose of this section is to give examples of basic usage in order to give users a general sense of the package.
@@ -32,7 +33,7 @@ library(abcrlda)
 data(iris)
 ```
 
-abcrlda is designed for binary classification therefore we will limit training data to two species (virginica and versicolor) from iris dataset
+Abcrlda is designed for binary classification therefore we will limit training data to two species (virginica and versicolor), 50 observation for each
 
 ```{r}
 train_data <- iris[which(iris[, ncol(iris)] == "versicolor" |
@@ -41,11 +42,27 @@ train_label <- factor(iris[which(iris[, ncol(iris)] == "versicolor" |
                                  iris[, ncol(iris)] == "virginica"), 5])
 ```
 
+After that we are ready to fit model and make predictions using resubstitution
 ```{r}
 model <- abcrlda(train_data, train_label)
 predict(model, train_data)
 ```
+
+Accuracy can be evaluated by this function
+```{r}
+risk_calculate(model, train_data, train_label)
+```
 ### Controlling priorities
+
+Cost is one of the most important hyperparameters for the abcrlda. 
+It controls prioritization of classes during model fitting and it used for overall risk calculation.
+Error rate for more important class tends to be smaller. 
+
+`R = e_0 * cost_10 + e_1 * cost_01`
+
+
+
+
 ```{r}
 model <- abcrlda(train_data, train_label, cost = c(0.75, 0.25))
 
@@ -61,8 +78,7 @@ sum(r != "virginica") / nrow(test_virginica)  # resubstitution error for second 
 
 ```
 
-If costs are switched
-
+If costs are reversed error rates are changed accordingly:
 
 ```{r}
 model <- abcrlda(train_data, train_label, cost = c(0.25, 0.75))
@@ -81,21 +97,42 @@ sum(r != "virginica") / nrow(test_virginica)  # resubstitution error for second 
 
 ### Affects of cost values on classification
 
+Cost values can be provided in different ways.
+There is short form for normalized cost values:
+
 ```{r}
 model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 a <- predict(model, train_data)
+```
+
+Which is equivalent to:
+
+```{r}
 # same params but more explicit
 model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(0.75, 0.25))
 b <- predict(model, train_data)
+```
+
+Scaling of a cost do not change prediction that will be made by model: 
+
+```{r}
 # same class costs ratio
 model <- abcrlda(train_data, train_label, gamma = 0.5, cost = c(3, 1))
 c <- predict(model, train_data)
+
 # all this model will give the same predictions
 all(a == b & a == c & b == c)
 ```
 
 ### Grid Search for optimal Hyperparameters
-```{r}
+
+This package contain function to performs grid search for optimal hyperparameters 
+within specified parameters range. 
+Performanse of a model can be evaluated using double asymptotic risk estimation or cross validation for separate sampling adjasted for cost.
+Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation
+while cross validation is more computationally expensive.
+
+```{r eval=F, include=T}
 cost_range <- seq(0.1, 0.9, by = 0.2)
 gamma_range <- c(0.1, 1, 10, 100, 1000)
 
@@ -105,13 +142,12 @@ gs <- grid_search(train_data, train_label,
                   method = "estimator")
 model <- abcrlda(train_data, train_label,
                  gamma = gs$gamma, cost = gs$cost)
-# predict(model, train_data)
-gs
+
 ```
 
-```{r eval=T, include=T}
-cost_range <- matrix(1:8, ncol = 2)
-gamma_range <- c(1, 10)
+```{r eval=F, include=T}
+cost_range <- matrix(1:10, ncol = 2)
+gamma_range <- c(0.1, 1, 10, 100, 1000)
 
 gs <- grid_search(train_data, train_label,
                   range_gamma = gamma_range,
@@ -119,6 +155,4 @@ gs <- grid_search(train_data, train_label,
                   method = "cross")
 model <- abcrlda(train_data, train_label,
                  gamma = gs$gamma, cost = gs$cost)
-# predict(model, train_data)
-gs
 ```

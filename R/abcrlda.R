@@ -1,39 +1,39 @@
 
 #' Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
 #' for Cost-Sensitive Binary Classification
-#' @description Performs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
-#' @param x Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.
-#' @param y a numeric vector or factor of class labels. Factor should have two levels
-#'   or be a vector with two distinct values.
+#' @description Constructs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis.
+#' @param x Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an feature vector.
+#' @param y A numeric vector or factor of class labels. Factor should have either two levels or be
+#'   a vector with two distinct values.
 #'   If \code{y} is presented as a vector, it will be coerced into a factor.
 #'   Length of \code{y} has to correspond to number of samples in \code{x}.
-#' @param gamma Regularization parameter \eqn{\gamma}{gamma} in the following equation
+#' @param gamma Regularization parameter \eqn{\gamma}{gamma} in the ABC-RLDA discriminant function given by:
 #'   \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 #'   \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
-#'   - log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
-#'   Formulas and derivations for parameters used in above equation can be found in the journal paper under reference section.
-#' @param cost parameter that controls prioretization of classes.
-#'  This is a vector of length 1 or 2 where first value is \eqn{C_{10}}{C_10} (represents prioretization of class 0)
-#'  and second value if provided is \eqn{C_{01}}{C_01} (represents prioretization of class 1).
-#'  Default value is c(0.5, 0.5), so both classes have equal priority and
-#'  risk essentially becomes equivalent to error rate.
+#'   - log(\frac{C_{01}}{C_{10}}) + \hat{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
+#'   \deqn{H = (I_p + \gamma \hat{\Sigma})^{-1}}{H = (I_p + gamma Sigma_hat)^-1}
+#'   Formulas and derivations for parameters used in above equation can be found in the article under reference section.
+#' @param cost Parameter that controls the overall misclassification costs.
+#'  This is a vector of length 1 or 2 where the first value is \eqn{C_{10}}{C_10} (represents the cost of assigning label 1 when the true label is 0)
+#'  and the second value, if provided, is \eqn{C_{01}}{C_01} (represents the cost of assigning label 0 when the true label is 1).
+#'  The default setting is c(0.5, 0.5), so both classes have equal misclassification costs
 #'
-#'  If single value is provided it should be normalized to be between 0 and 1 (but not including 0 or 1).
-#'  This value will be assigned to \eqn{C_{10}}{C_10} and
-#'  \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
-#'  In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.
-#' @param bias_correction Takes in boolean value.
-#'   If \code{bias_correction} is TRUE asymptotic bias correction will be performed.
-#'   Otherwise (\code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
-#'   ABCRLDA is redused to traditional RLDA.
-#'   Default is TRUE
-#' @return An object of class "abcrlda" is returned which can be used for class prediction (see predict())
-#'   \item{a}{Slope of a discriminant hyperplane. W(\strong{x}) = \strong{a}' \strong{x} + m.}
-#'   \item{m}{Bias term.  W(\strong{x}) = \strong{a}'\strong{x} + m.}
-#'   \item{cost}{Vector of cost values that were used to fit this model}
-#'   \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} == 1.}
-#'   \item{gamma}{Regularization parameter value provided during fitting.}
-#'   \item{lev}{Levels. Corresponds to the labels in y.}
+#'  If a single value is provided, it should be normalized to lie between 0 and 1 (but not including 0 or 1).
+#'  This value will be assigned to \eqn{C_{10}}{C_10} while
+#'  \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}.
+##  In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.
+#' @param bias_correction Takes in a boolean value.
+#'   If \code{bias_correction} is TRUE, then asymptotic bias correction will be performed.
+#'   Otherwise, (if \code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
+#'   the ABCRLDA is the classical RLDA.
+#'   The default is TRUE.
+#' @return An object of class "abcrlda" is returned which can be used for class prediction (see predict()).
+#'   \item{a}{Coefficient vector of a discriminant hyperplane: W(\strong{x}) = \strong{a}' \strong{x} + m.}
+#'   \item{m}{Intercept of discriminant hyperplane: W(\strong{x}) = \strong{a}'\strong{x} + m.}
+#'   \item{cost}{Vector of cost values that are used to construct ABC-RLDA.}
+#'   \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} = 1.}
+#'   \item{gamma}{Regularization parameter value used in ABC_RLDA discriminant function.}
+#'   \item{lev}{Levels corresponding to the labels in y.}
 #' @section Reference:
 #'   A. Zollanvari, M. Abdirash, A. Dadlani and B. Abibullaev,
 #'   "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
@@ -127,7 +127,7 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5), bias_correction=TRUE){
 
 
 #' Class Prediction for abcrlda objects
-#' @description Computes class predictions for new data based on a given abcrlda object
+#' @description Classifies observations based on a given abcrlda object.
 #' @param object An object of class "abcrlda".
 #' @param newx Matrix of new values for x at which predictions are to be made.
 # @param out_type Determines a type of output. Two type of input could be provided.
@@ -136,7 +136,7 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5), bias_correction=TRUE){
 #' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
-#'  Returns factor vector with predictions for each observation. Factor levels are inhereted from the object variable.
+#'  Returns factor vector with predictions (i.e., assigned labels) for each observation. Factor levels are inhereted from the object variable.
 #' @export
 #' @family functions in the package
 #'
@@ -160,25 +160,29 @@ predict.abcrlda <- function(object, newx, ...){
 
 
 #' Risk Calculate
-#' @description Computes class predictions for new data based on a given abcrlda object
+#' @description Estimates risk and error by applying a constructed classifier (an object of class abcrlda) to a given set of observations.
 #' @param object An object of class "abcrlda".
-#' @param x_test Matrix of values for x for which true class labels are known.
-#' @param y_true a numeric vector or factor of true class labels. Factor should have two levels
-#'   or be a vector with two distinct values.
+#' @param x_true Matrix of values for x for which true class labels are known.
+#' @param y_true A numeric vector or factor of true class labels. Factor should have either two levels or be a vector with two distinct values.
 #'   If \code{y_true} is presented as a vector, it will be coerced into a factor.
 #'   Length of \code{y_true} has to correspond to number of samples in \code{x_test}.
 #'
-#' @return
+#' @return A list of parameters where
+#'   \item{actual_err0}{Error rate for class 0.}
+#'   \item{actual_err1}{Error rate for class 1.}
+#'   \item{actual_errTotal}{Error rate overall.}
+#'   \item{actual_normrisk}{Risk value normilized to be between 0 and 1.}
+#'   \item{actual_risk}{Risk value without normilization.}
 #' @export
 #' @family functions in the package
 #'
 #' @example inst/examples/example_risk_calculate.R
-risk_calculate <- function(object, x_test, y_true){
+risk_calculate <- function(object, x_true, y_true){
   if (!is.factor(y_true))
     y_true <- as.factor(y_true)
 
-  test0 <- x_test[y_true == object$lev[1], ]
-  test1 <- x_test[y_true == object$lev[2], ]
+  test0 <- x_true[y_true == object$lev[1], ]
+  test1 <- x_true[y_true == object$lev[2], ]
   res0 <- as.numeric(stats::predict(object, test0)) - 1
   res1 <- as.numeric(stats::predict(object, test1)) - 1
   nerr0 <- sum(res0)
@@ -186,8 +190,8 @@ risk_calculate <- function(object, x_test, y_true){
   err0 <- nerr0 / length(res0)
   err1 <- nerr1 / length(res1)
   return(structure(list(actual_err0 = err0,
-                      actual_err1 = err1,
-                      actual_errTotal = (nerr0 + nerr1) / length(y_true),
-                      actual_normrisk = err0 * object$ncost[1] + err1 * object$ncost[2],
-                      actual_risk = err0 * object$cost[1] + err1 * object$cost[2])))
+                        actual_err1 = err1,
+                        actual_errTotal = (nerr0 + nerr1) / length(y_true),
+                        actual_normrisk = err0 * object$ncost[1] + err1 * object$ncost[2],
+                        actual_risk = err0 * object$cost[1] + err1 * object$cost[2])))
 }

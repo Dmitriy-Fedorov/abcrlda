@@ -8,47 +8,46 @@ for Cost-Sensitive Binary Classification}
 abcrlda(x, y, gamma = 1, cost = c(0.5, 0.5), bias_correction = TRUE)
 }
 \arguments{
-\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an observation vector.}
+\item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an feature vector.}
 
-\item{y}{a numeric vector or factor of class labels. Factor should have two levels
-or be a vector with two distinct values.
+\item{y}{A numeric vector or factor of class labels. Factor should have either two levels or be
+a vector with two distinct values.
 If \code{y} is presented as a vector, it will be coerced into a factor.
 Length of \code{y} has to correspond to number of samples in \code{x}.}
 
-\item{gamma}{Regularization parameter \eqn{\gamma}{gamma} in the following equation
+\item{gamma}{Regularization parameter \eqn{\gamma}{gamma} in the ABC-RLDA discriminant function given by:
 \deqn{W_{ABC}^{RLDA} = \gamma (x-\frac{\bar{x}_0 +
 \bar{x}_1}{2})^T H (\bar{x}_0 - \bar{x}_1)
-- log(\frac{C_{01}}{C_{10}}) + \check{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
-Formulas and derivations for parameters used in above equation can be found in the journal paper under reference section.}
+- log(\frac{C_{01}}{C_{10}}) + \hat{\omega}_{opt}}{W_ABCRLDA = gamma (x - (x0 + x1)/2) H (x0 - x1) + log(C_01/C_10) + omega_opt}
+\deqn{H = (I_p + \gamma \hat{\Sigma})^{-1}}{H = (I_p + gamma Sigma_hat)^-1}
+Formulas and derivations for parameters used in above equation can be found in the article under reference section.}
 
-\item{cost}{parameter that controls prioretization of classes.
- This is a vector of length 1 or 2 where first value is \eqn{C_{10}}{C_10} (represents prioretization of class 0)
- and second value if provided is \eqn{C_{01}}{C_01} (represents prioretization of class 1).
- Default value is c(0.5, 0.5), so both classes have equal priority and
- risk essentially becomes equivalent to error rate.
+\item{cost}{Parameter that controls the overall misclassification costs.
+ This is a vector of length 1 or 2 where the first value is \eqn{C_{10}}{C_10} (represents the cost of assigning label 1 when the true label is 0)
+ and the second value, if provided, is \eqn{C_{01}}{C_01} (represents the cost of assigning label 0 when the true label is 1).
+ The default setting is c(0.5, 0.5), so both classes have equal misclassification costs
 
- If single value is provided it should be normalized to be between 0 and 1 (but not including 0 or 1).
- This value will be assigned to \eqn{C_{10}}{C_10} and
- \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}
- In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.}
+ If a single value is provided, it should be normalized to lie between 0 and 1 (but not including 0 or 1).
+ This value will be assigned to \eqn{C_{10}}{C_10} while
+ \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}.}
 
-\item{bias_correction}{Takes in boolean value.
-If \code{bias_correction} is TRUE asymptotic bias correction will be performed.
-Otherwise (\code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
-ABCRLDA is redused to traditional RLDA.
-Default is TRUE}
+\item{bias_correction}{Takes in a boolean value.
+If \code{bias_correction} is TRUE, then asymptotic bias correction will be performed.
+Otherwise, (if \code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
+the ABCRLDA is the classical RLDA.
+The default is TRUE.}
 }
 \value{
-An object of class "abcrlda" is returned which can be used for class prediction (see predict())
-  \item{a}{Slope of a discriminant hyperplane. W(\strong{x}) = \strong{a}' \strong{x} + m.}
-  \item{m}{Bias term.  W(\strong{x}) = \strong{a}'\strong{x} + m.}
-  \item{cost}{Vector of cost values that were used to fit this model}
-  \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} == 1.}
-  \item{gamma}{Regularization parameter value provided during fitting.}
-  \item{lev}{Levels. Corresponds to the labels in y.}
+An object of class "abcrlda" is returned which can be used for class prediction (see predict()).
+  \item{a}{Coefficient vector of a discriminant hyperplane: W(\strong{x}) = \strong{a}' \strong{x} + m.}
+  \item{m}{Intercept of discriminant hyperplane: W(\strong{x}) = \strong{a}'\strong{x} + m.}
+  \item{cost}{Vector of cost values that are used to construct ABC-RLDA.}
+  \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} = 1.}
+  \item{gamma}{Regularization parameter value used in ABC_RLDA discriminant function.}
+  \item{lev}{Levels corresponding to the labels in y.}
 }
 \description{
-Performs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
+Constructs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis.
 }
 \section{Reference}{
 

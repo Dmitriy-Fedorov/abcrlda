@@ -14,10 +14,10 @@
 \item{...}{Argument used by generic function predict(object, x, ...).}
 }
 \value{
-Returns factor vector with predictions for each observation. Factor levels are inhereted from the object variable.
+Returns factor vector with predictions (i.e., assigned labels) for each observation. Factor levels are inhereted from the object variable.
 }
 \description{
-Computes class predictions for new data based on a given abcrlda object
+Classifies observations based on a given abcrlda object.
 }
 \section{Reference}{
 

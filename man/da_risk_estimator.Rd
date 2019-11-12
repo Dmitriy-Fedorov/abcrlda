@@ -11,10 +11,10 @@ da_risk_estimator(object)
 }
 \value{
 Calculates risk based on estimated class error rates and misclassification costs
-  \deqn{\Re = \varepsilon_0 * cost_{10} + \varepsilon_1 * cost_{01}}{R = e_0 * cost_10 + e_1 * cost_01)}
+  \deqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}
 }
 \description{
-Generalized consistent estimator of risk
+This function implements the generalized (double asymptotic) consistent estimator of risk.
 }
 \section{Reference}{
 
