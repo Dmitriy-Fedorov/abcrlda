@@ -1,7 +1,7 @@
 Package: abcrlda
 Type: Package
 Title: Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
-Version: 0.1.1
+Version: 0.1.0
 Author: Dmitriy Fedorov [aut, cre],
   Amin Zollanvari [aut],
   Aresh Dadlani [aut],
@@ -12,10 +12,8 @@ Authors@R: c(
     person("Amin", "Zollanvari", email = "amin.zollanvari@nu.edu.kz", role = "aut"),
     person("Aresh", "Dadlani", email = "aresh.dadlani@nu.edu.kz ", role = "aut"),
     person("Berdakh", "Abibullaev", email = "berdakh.abibullaev@nu.edu.kz", role = "aut"))
-Description: This package offers methods to perform asymptotically bias-corrected regularized linear discriminant analysis (ABC_RLDA) for cost-sensitive binary classification. The bias-correction is an estimate of the bias term added to regularized discriminant analysis (RLDA) that minimizes the overall risk. The default magnitude of misclassification costs are equal and set to 0.5; however, the package also offers the options to set them to some predetermined values or, alternatively, take them as hyperparameters to tune.
+Description: Offers methods to perform asymptotically bias-corrected regularized linear discriminant analysis (ABC_RLDA) for cost-sensitive binary classification. The bias-correction is an estimate of the bias term added to regularized discriminant analysis (RLDA) that minimizes the overall risk. The default magnitude of misclassification costs are equal and set to 0.5; however, the package also offers the options to set them to some predetermined values or, alternatively, take them as hyperparameters to tune.
 Imports: stats
-Suggests: knitr, rmarkdown
-VignetteBuilder: knitr
 License: GPL-3
 URL: https://ieeexplore.ieee.org/document/8720003/
 Encoding: UTF-8
