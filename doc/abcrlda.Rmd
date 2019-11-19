@@ -10,11 +10,7 @@ vignette: >
 
 ## Introduction 
 
-The abcrlda package implements Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis.
-It is an extension of classical RLDA (Regularized Linear Discriminant Analysis) algorithm 
-that improves performance in case of Cost-Sensitive Binary Classification.
-ABCRLDA makes it possible to prioritize classes differently during fitting process.
-Missclassification cost could be different for different classes.
+This package offers methods to perform asymptotically bias-corrected regularized linear discriminant analysis (ABC_RLDA) for cost-sensitive binary classification. The bias-correction is an estimate of the bias term added to regularized discriminant analysis (RLDA) that minimizes the overall risk. The default magnitude of misclassification costs are equal and set to 0.5; however, the package also offers the options to set them to some predetermined values or, alternatively, take them as hyperparameters to tune.
 
 
 ```{r eval=F, include=F}
@@ -26,14 +22,14 @@ decrease number of false negatives (illness is not detected) even at expence
 ## Quick Start
 The purpose of this section is to give examples of basic usage in order to give users a general sense of the package.
 For illustration purposes iris dataset will be used.
-First, we load the abcrlda package and iris dataset
+First, we load the abcrlda package and iris dataset.
 
 ```{r}
 library(abcrlda)
 data(iris)
 ```
 
-Abcrlda is designed for binary classification therefore we will limit training data to two species (virginica and versicolor), 50 observation for each
+Abcrlda is designed for binary classification therefore we will limit training data to two species (virginica and versicolor), 50 observation for each.
 
 ```{r}
 train_data <- iris[which(iris[, ncol(iris)] == "versicolor" |
@@ -42,23 +38,23 @@ train_label <- factor(iris[which(iris[, ncol(iris)] == "versicolor" |
                                  iris[, ncol(iris)] == "virginica"), 5])
 ```
 
-After that we are ready to fit model and make predictions using resubstitution
+After that we are ready to fit model and make predictions using resubstitution.
 ```{r}
 model <- abcrlda(train_data, train_label)
 predict(model, train_data)
 ```
 
-Accuracy can be evaluated by this function
+Accuracy can be evaluated by this function:
 ```{r}
 risk_calculate(model, train_data, train_label)
 ```
 ### Controlling priorities
 
 Cost is one of the most important hyperparameters for the abcrlda. 
-It controls prioritization of classes during model fitting and it used for overall risk calculation.
-Error rate for more important class tends to be smaller. 
+It controls the overall misclassification risk for classes during model fitting.
+Risk rate for more important class tends to be smaller. 
 
-`R = e_0 * cost_10 + e_1 * cost_01`
+`R = e_0 * C_10 + e_1 * C_01`
 
 
 
@@ -78,7 +74,7 @@ sum(r != "virginica") / nrow(test_virginica)  # resubstitution error for second 
 
 ```
 
-If costs are reversed error rates are changed accordingly:
+The effect of costs switching can be seen on error rates:
 
 ```{r}
 model <- abcrlda(train_data, train_label, cost = c(0.25, 0.75))
@@ -126,11 +122,8 @@ all(a == b & a == c & b == c)
 
 ### Grid Search for optimal Hyperparameters
 
-This package contain function to performs grid search for optimal hyperparameters 
-within specified parameters range. 
-Performanse of a model can be evaluated using double asymptotic risk estimation or cross validation for separate sampling adjasted for cost.
-Double asymptotic risk estimation is faster option because it uses closed form formula for risk estimation
-while cross validation is more computationally expensive.
+This package contain function to performs grid search to estimate the optimal hyperparameters (gamma and cost) within specified space based on double asymptotic risk estimation or cross validation.
+Double asymptotic risk estimation is more efficient to compute because it uses closed form for risk estimation. For further details, refer to the article in the reference section.
 
 ```{r eval=F, include=T}
 cost_range <- seq(0.1, 0.9, by = 0.2)
