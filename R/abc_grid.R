@@ -42,10 +42,6 @@
 grid_search <- function(x, y, range_gamma, range_cost,
                         method="estimator", nfolds=10, bias_correction=TRUE){
 
-  if(!bias_correction & method=="estimator")
-    warning("Estimator (Double Asymptotic Risk Estimator) would not give meaningful
-            results when bias_correction option is FALSE")
-
   list_gamma <- numeric()
   list_cost <- numeric()
   risk_estimates <- numeric()
@@ -59,7 +55,7 @@ grid_search <- function(x, y, range_gamma, range_cost,
         abcrlda_model <- abcrlda(x, y, gamma, cost)
         list_gamma <- c(list_gamma, gamma)
         list_cost <- rbind(list_cost, cost)
-        risk_estimates <- c(risk_estimates, da_risk_estimator(abcrlda_model))
+        risk_estimates <- c(risk_estimates, da_risk_estimator(abcrlda_model, bias_correction))
       }
     }
   }else if (method == "cross"){
@@ -186,20 +182,32 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10, bias_co
 #' @family functions in the package
 #' @example inst/examples/example_risk.R
 #' @inheritSection abcrlda Reference
-da_risk_estimator <- function(object){
+da_risk_estimator <- function(object, bias_correction=TRUE){
   ## check requirements
   if (class(object) != "abcrlda")
     stop("object has to be of type abcrlda")
 
+  # equation number 10 in abcrlda paper
+  error_estimate_10 <- function(object, i){
+    G <- c(object$G0, object$G1)
+    X <- (-1) ^ i * (G[1 + i]) / sqrt(object$D)
+    return(1 - stats::pnorm(X))
+  }
+  # equation number 29 in abcrlda paper
   error_estimate_29 <- function(object, i){
     Ghat <- c(object$Ghat0, object$Ghat1)
     X <- (-1) ^ i * (Ghat[1 + i] + object$omegaopt / object$gamma) /
          sqrt(object$Dhat)
     return(1 - stats::pnorm(X))
   }
+  if (bias_correction){
+    e0 <- error_estimate_29(object, 0)
+    e1 <- error_estimate_29(object, 1)
+  }else{
+    e0 <- error_estimate_10(object, 0)
+    e1 <- error_estimate_10(object, 1)
+  }
 
-  e0 <- error_estimate_29(object, 0)
-  e1 <- error_estimate_29(object, 1)
   return(object$cost[1] * e0 + object$cost[2] * e1)
 }
 
