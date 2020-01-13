@@ -154,8 +154,10 @@ predict.abcrlda <- function(object, newx, ...){
   newx <- as.matrix(newx, drop = FALSE)
   pred <- as.numeric(newx %*% object$a + object$m <= 0) + 1
   cl <- object$lev[pred]
-  # cl <- factor(cl, levels=1:k, labels=object$lev)
-  return(as.factor(cl))
+  cl <- factor(cl, levels=object$lev)
+  # cl <- as.factor(cl)
+  # levels(cl) <- object$lev
+  return(cl)
 }
 
 
@@ -180,6 +182,9 @@ predict.abcrlda <- function(object, newx, ...){
 risk_calculate <- function(object, x_true, y_true){
   if (!is.factor(y_true))
     y_true <- as.factor(y_true)
+
+  if (!all(levels(y_true) == object$lev))
+    stop("object and y_true have different levels")
 
   test0 <- x_true[y_true == object$lev[1], ]
   test1 <- x_true[y_true == object$lev[2], ]
