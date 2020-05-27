@@ -21,7 +21,7 @@
 #'  If a single value is provided, it should be normalized to lie between 0 and 1 (but not including 0 or 1).
 #'  This value will be assigned to \eqn{C_{10}}{C_10} while
 #'  \eqn{C_{01}}{C_01} will be equal to \eqn{(1 - C_{10})}{1 - C_10}.
-##  In a vector of length 1, values bigger than 0.5 prioretizes correct classification of 0 class while values less than 0.5 prioretizes 1 class.
+##  In a vector of length 1, values bigger than 0.5 prioritizes correct classification of 0 class while values less than 0.5 prioritizes 1 class.
 #' @param bias_correction Takes in a boolean value.
 #'   If \code{bias_correction} is TRUE, then asymptotic bias correction will be performed.
 #'   Otherwise, (if \code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
@@ -31,7 +31,7 @@
 #'   \item{a}{Coefficient vector of a discriminant hyperplane: W(\strong{x}) = \strong{a}' \strong{x} + m.}
 #'   \item{m}{Intercept of discriminant hyperplane: W(\strong{x}) = \strong{a}'\strong{x} + m.}
 #'   \item{cost}{Vector of cost values that are used to construct ABC-RLDA.}
-#'   \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} = 1.}
+#'   \item{ncost}{Normalized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} = 1.}
 #'   \item{gamma}{Regularization parameter value used in ABC_RLDA discriminant function.}
 #'   \item{lev}{Levels corresponding to the labels in y.}
 #' @section Reference:
@@ -39,7 +39,7 @@
 #'   "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
 #'   Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
 #'   Sept. 2019. doi: 10.1109/LSP.2019.2918485
-#'   URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+#'   URL: \url{https://ieeexplore.ieee.org/document/8720003}
 #' @export
 #' @family functions in the package
 #' @example inst/examples/example_abcrlda.R
@@ -139,7 +139,7 @@ abcrlda <- function(x, y, gamma=1, cost=c(0.5, 0.5), bias_correction=TRUE){
 #' @param ... Argument used by generic function predict(object, x, ...).
 #'
 #' @return
-#'  Returns factor vector with predictions (i.e., assigned labels) for each observation. Factor levels are inhereted from the object variable.
+#'  Returns factor vector with predictions (i.e., assigned labels) for each observation. Factor levels are inherited from the object variable.
 #' @export
 #' @family functions in the package
 #'

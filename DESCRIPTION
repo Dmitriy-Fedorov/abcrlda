@@ -1,7 +1,7 @@
 Package: abcrlda
 Type: Package
 Title: Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis
-Version: 1.0.1
+Version: 1.0.3
 Author: Dmitriy Fedorov [aut, cre],
     Amin Zollanvari [aut],
     Aresh Dadlani [aut],
@@ -20,4 +20,4 @@ URL: https://ieeexplore.ieee.org/document/8720003/,
      https://dx.doi.org/10.1109/LSP.2019.2918485
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0

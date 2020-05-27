@@ -31,7 +31,7 @@
 #'   "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
 #'   Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
 #'   Sept. 2019. doi: 10.1109/LSP.2019.2918485
-#'   URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+#'   URL: \url{https://ieeexplore.ieee.org/document/8720003}
 #'
 #'   Braga-Neto, Ulisses & Zollanvari, Amin & Dougherty, Edward. (2014).
 #'   Cross-Validation Under Separate Sampling: Strong Bias and How to Correct It.
@@ -52,10 +52,10 @@ grid_search <- function(x, y, range_gamma, range_cost,
     for (gamma in range_gamma){
       for (i in 1:nrow(range_cost)){
         cost <- range_cost[i, ]
-        abcrlda_model <- abcrlda(x, y, gamma, cost)
+        abcrlda_model <- abcrlda(x, y, gamma, cost, bias_correction)
         list_gamma <- c(list_gamma, gamma)
         list_cost <- rbind(list_cost, cost)
-        risk_estimates <- c(risk_estimates, da_risk_estimator(abcrlda_model, bias_correction))
+        risk_estimates <- c(risk_estimates, da_risk_estimator(abcrlda_model))
       }
     }
   }else if (method == "cross"){
@@ -153,11 +153,13 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10, bias_co
 
       train_data <- rbind(x0[-test_index0, , drop = FALSE],
                           x1[-test_index1, , drop = FALSE])
-      train_label <- factor(c(y0[-test_index0], y1[-test_index1]),
-                            levels=1:k, labels=lev)
+      # train_label <- factor(c(y0[-test_index0], y1[-test_index1]),
+      #                       levels=1:k, labels=lev)
+      train_label <- c(y0[-test_index0], y1[-test_index1])
 
       model <- abcrlda(train_data, train_label, gamma, cost, bias_correction)
 
+      # direct shortcut for abcrlda.predict
       res0 <- as.numeric(test_data0 %*% model$a + model$m <= 0)
       res1 <- as.numeric(test_data1 %*% model$a + model$m <= 0)
 
@@ -175,6 +177,11 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10, bias_co
 #' Double Asymptotic Risk Estimator
 #' @description This function implements the generalized (double asymptotic) consistent estimator of risk.
 #' @inheritParams predict.abcrlda
+# @param bias_correction Takes in a boolean value.
+#   If \code{bias_correction} is TRUE, then asymptotic bias correction will be performed.
+#   Otherwise, (if \code{bias_correction} is FALSE) asymptotic bias correction will not be performed and
+#   the ABCRLDA is the classical RLDA.
+#   The default is TRUE.
 #'
 #' @return Calculates risk based on estimated class error rates and misclassification costs
 #'   \deqn{\Re = \varepsilon_0 * C_{10} + \varepsilon_1 * C_{01}}{R = e_0 * C_10 + e_1 * C_01)}
@@ -182,7 +189,7 @@ cross_validation <- function(x, y, gamma=1, cost=c(0.5, 0.5), nfolds=10, bias_co
 #' @family functions in the package
 #' @example inst/examples/example_risk.R
 #' @inheritSection abcrlda Reference
-da_risk_estimator <- function(object, bias_correction=TRUE){
+da_risk_estimator <- function(object){
   ## check requirements
   if (class(object) != "abcrlda")
     stop("object has to be of type abcrlda")
@@ -200,7 +207,7 @@ da_risk_estimator <- function(object, bias_correction=TRUE){
          sqrt(object$Dhat)
     return(1 - stats::pnorm(X))
   }
-  if (bias_correction){
+  if (object$bias_correction){
     e0 <- error_estimate_29(object, 0)
     e1 <- error_estimate_29(object, 1)
   }else{
