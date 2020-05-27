@@ -4,8 +4,15 @@
 \alias{grid_search}
 \title{Grid Search}
 \usage{
-grid_search(x, y, range_gamma, range_cost, method = "estimator",
-  nfolds = 10, bias_correction = TRUE)
+grid_search(
+  x,
+  y,
+  range_gamma,
+  range_cost,
+  method = "estimator",
+  nfolds = 10,
+  bias_correction = TRUE
+)
 }
 \arguments{
 \item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an feature vector.}
@@ -54,7 +61,7 @@ Performs grid search to estimate the optimal hyperparameters (\code{gamma} and \
   "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
   Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
   Sept. 2019. doi: 10.1109/LSP.2019.2918485
-  URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+  URL: \url{https://ieeexplore.ieee.org/document/8720003}
 
   Braga-Neto, Ulisses & Zollanvari, Amin & Dougherty, Edward. (2014).
   Cross-Validation Under Separate Sampling: Strong Bias and How to Correct It.
@@ -91,10 +98,11 @@ model <- abcrlda(train_data, train_label,
 predict(model, train_data)
 }
 \seealso{
-Other functions in the package: \code{\link{abcrlda}},
-  \code{\link{cross_validation}},
-  \code{\link{da_risk_estimator}},
-  \code{\link{predict.abcrlda}},
-  \code{\link{risk_calculate}}
+Other functions in the package: 
+\code{\link{abcrlda}()},
+\code{\link{cross_validation}()},
+\code{\link{da_risk_estimator}()},
+\code{\link{predict.abcrlda}()},
+\code{\link{risk_calculate}()}
 }
 \concept{functions in the package}

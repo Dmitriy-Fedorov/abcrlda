@@ -36,9 +36,11 @@ model <- abcrlda(train_data, train_label, gamma = 0.5, cost = 0.75)
 risk_calculate(model, train_data, train_label)
 }
 \seealso{
-Other functions in the package: \code{\link{abcrlda}},
-  \code{\link{cross_validation}},
-  \code{\link{da_risk_estimator}},
-  \code{\link{grid_search}}, \code{\link{predict.abcrlda}}
+Other functions in the package: 
+\code{\link{abcrlda}()},
+\code{\link{cross_validation}()},
+\code{\link{da_risk_estimator}()},
+\code{\link{grid_search}()},
+\code{\link{predict.abcrlda}()}
 }
 \concept{functions in the package}

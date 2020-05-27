@@ -42,7 +42,7 @@ An object of class "abcrlda" is returned which can be used for class prediction 
   \item{a}{Coefficient vector of a discriminant hyperplane: W(\strong{x}) = \strong{a}' \strong{x} + m.}
   \item{m}{Intercept of discriminant hyperplane: W(\strong{x}) = \strong{a}'\strong{x} + m.}
   \item{cost}{Vector of cost values that are used to construct ABC-RLDA.}
-  \item{ncost}{Normilized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} = 1.}
+  \item{ncost}{Normalized cost such that \eqn{C_{10}}{C_10} + \eqn{C_{01}}{C_01} = 1.}
   \item{gamma}{Regularization parameter value used in ABC_RLDA discriminant function.}
   \item{lev}{Levels corresponding to the labels in y.}
 }
@@ -55,7 +55,7 @@ Constructs Asymptotically Bias-Corrected Regularized Linear Discriminant Analysi
   "Asymptotically Bias-Corrected Regularized Linear Discriminant Analysis for Cost-Sensitive
   Binary Classification," in IEEE Signal Processing Letters, vol. 26, no. 9, pp. 1300-1304,
   Sept. 2019. doi: 10.1109/LSP.2019.2918485
-  URL: \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8720003&isnumber=8770167}
+  URL: \url{https://ieeexplore.ieee.org/document/8720003}
 }
 
 \examples{
@@ -77,9 +77,11 @@ all(a == b & a == c & b == c)
 #' [1] TRUE
 }
 \seealso{
-Other functions in the package: \code{\link{cross_validation}},
-  \code{\link{da_risk_estimator}},
-  \code{\link{grid_search}}, \code{\link{predict.abcrlda}},
-  \code{\link{risk_calculate}}
+Other functions in the package: 
+\code{\link{cross_validation}()},
+\code{\link{da_risk_estimator}()},
+\code{\link{grid_search}()},
+\code{\link{predict.abcrlda}()},
+\code{\link{risk_calculate}()}
 }
 \concept{functions in the package}

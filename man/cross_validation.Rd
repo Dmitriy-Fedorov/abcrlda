@@ -4,8 +4,14 @@
 \alias{cross_validation}
 \title{Cross Validation for separate sampling adjusted for cost.}
 \usage{
-cross_validation(x, y, gamma = 1, cost = c(0.5, 0.5), nfolds = 10,
-  bias_correction = TRUE)
+cross_validation(
+  x,
+  y,
+  gamma = 1,
+  cost = c(0.5, 0.5),
+  nfolds = 10,
+  bias_correction = TRUE
+)
 }
 \arguments{
 \item{x}{Input matrix or data.frame of dimension \code{nobs x nvars}; each row is an feature vector.}
@@ -67,9 +73,11 @@ train_label <- factor(iris[which(iris[, ncol(iris)] == "virginica" |
 cross_validation(train_data, train_label, gamma = 10)
 }
 \seealso{
-Other functions in the package: \code{\link{abcrlda}},
-  \code{\link{da_risk_estimator}},
-  \code{\link{grid_search}}, \code{\link{predict.abcrlda}},
-  \code{\link{risk_calculate}}
+Other functions in the package: 
+\code{\link{abcrlda}()},
+\code{\link{da_risk_estimator}()},
+\code{\link{grid_search}()},
+\code{\link{predict.abcrlda}()},
+\code{\link{risk_calculate}()}
 }
 \concept{functions in the package}
